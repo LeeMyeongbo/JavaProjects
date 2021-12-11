@@ -214,7 +214,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 Acti
 			jp.add(options[i]);
 		}
 		buttonimgs[3] = new ImageIcon(but[3]); // 일시정지 버튼 이미지를 buttonimgs의 3번 index에 저장
-		setLocation(670, 250); // (x,y) -> 왼쪽에서 오른쪽으로 갈수록 x 증가, 위에서 아래로 갈수록 y 증가
+		setLocation(600, 50); // (x, y) -> 왼쪽에서 오른쪽으로 갈수록 x 증가, 위에서 아래로 갈수록 y 증가
 		setSize(500, 700); // MP3 창 크기를 500*700으로 설정
 		add(jp);
 		jb[0].setLocation(200, 30);
