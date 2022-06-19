@@ -1,5 +1,3 @@
-package mp3;
-
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;

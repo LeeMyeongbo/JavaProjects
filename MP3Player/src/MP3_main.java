@@ -1,5 +1,3 @@
-package mp3;
-
 import javafx.embed.swing.*;
 
 public class MP3_main {
