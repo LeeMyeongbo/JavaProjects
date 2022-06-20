@@ -1,4 +1,6 @@
 out/
-jar/
+lib/
 .idea/
 excluded/
+
+*.iml

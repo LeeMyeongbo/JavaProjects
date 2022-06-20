@@ -16,11 +16,12 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Objects;
 
 class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 ActionListener 구현
 	@Serial
     private static final long serialVersionUID = 1L;
-	private final ImageIcon image = new ImageIcon("images/background.png"); // 배경
+	private final ImageIcon image = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("background.png"))); // 배경
     private ArrayList<File> filelists = new ArrayList<>(); // mp3 파일 저장용 ArrayList
     private final ImageIcon[] buttonimgs = new ImageIcon[4]; // 재생, 일시정지, 이전곡, 다음곡 버튼 이미지
 	private final ImageIcon[] optionimgs = new ImageIcon[3]; // 전체 한 번 재생, 전체 반복 재생, 셔플 재생 버튼 이미지
@@ -178,9 +179,9 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 	// 클래스 생성자(MP3 Player 기본 세팅)
 	public MP3_play() {
 		super("MP3 플레이어"); // 상위 클래스인 JFrame 클래스의 생성자 호출
-        // 4가지 버튼 이미지 파일 이름
-        String[] but = {"images/재생.png", "images/이전곡.png", "images/다음곡.png", "images/일시정지.png"};
-        // 패널에다 위의 배경을 그림
+        ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("Mp3Playericon.png")));
+        setIconImage(icon.getImage());
+        String[] but = {"재생.png", "이전곡.png", "다음곡.png", "일시정지.png"};
         JPanel jp = new JPanel() { // 패널에다 위의 배경을 그림
             @Serial
             private static final long serialVersionUID = 1L;
@@ -192,7 +193,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
             }
         };
         for (int i = 0; i < 3; i++) { // 재생(i = 0), 이전곡(i = 1), 다음곡(i = 2)
-			buttonimgs[i] = new ImageIcon(but[i]); // 파일의 상대경로 입력(파일 이름만 적으면 상대 경로에 위치해 있는 파일을 받음)
+			buttonimgs[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(but[i])));
 			jb[i] = new JButton(buttonimgs[i]); // 버튼 이미지를 가지는 버튼 생성
 			jb[i].setBorderPainted(false); // 버튼 경계선 제거
 			jb[i].setContentAreaFilled(false); // 버튼 내부 색 제거
@@ -201,8 +202,8 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 			jb[i].addActionListener(this);
 			jp.add(jb[i]);
             // 3가지 재생 옵션 파일 이름
-            String[] opt = {"images/전체 한 번씩.png", "images/전체반복.png", "images/셔플.png"};
-            optionimgs[i] = new ImageIcon(opt[i]);
+            String[] opt = {"전체 한 번씩.png", "전체반복.png", "셔플.png"};
+            optionimgs[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(opt[i])));
 			options[i] = new JButton(optionimgs[i]);
 			options[i].setBorderPainted(false);
 			options[i].setContentAreaFilled(false);
@@ -212,7 +213,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 			options[i].addActionListener(this);
 			jp.add(options[i]);
 		}
-		buttonimgs[3] = new ImageIcon(but[3]); // 일시정지 버튼 이미지를 buttonimgs의 3번 index에 저장
+		buttonimgs[3] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(but[3])));
 		setLocation(600, 50); // (x, y) -> 왼쪽에서 오른쪽으로 갈수록 x 증가, 위에서 아래로 갈수록 y 증가
 		setSize(500, 700); // MP3 창 크기를 500*700으로 설정
 		add(jp);
