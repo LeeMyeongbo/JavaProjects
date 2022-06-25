@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.media.*?>
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
+   <MediaView fx:id="mediaArea" fitHeight="650.0" fitWidth="850.0" StackPane.alignment="CENTER" />
+   <HBox alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="100.0" prefWidth="600.0" StackPane.alignment="BOTTOM_CENTER">
+      <ImageView fx:id="settingButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseSettingsEntered" onMouseExited="#onMouseSettingsExited" onMousePressed="#onMouseSettingsPressed" onMouseReleased="#onMouseSettingsReleased" pickOnBounds="true" preserveRatio="true">
+         <HBox.margin>
+            <Insets right="40.0" />
+         </HBox.margin>
+         <Image url="@settings.png" />
+      </ImageView>
+      <ImageView fx:id="preButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMousePrebuttonEntered" onMouseExited="#onMousePrebuttonExited" onMousePressed="#onMousePrebuttonPressed" onMouseReleased="#onMousePrebuttonReleased" pickOnBounds="true" preserveRatio="true">
+         <HBox.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </HBox.margin>
+         <Image url="@pre.png" />
+      </ImageView>
+      <ImageView fx:id="backButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseBackbuttonEntered" onMouseExited="#onMouseBackbuttonExited" onMousePressed="#onMouseBackbuttonPressed" onMouseReleased="#onMouseBackbuttonReleased" pickOnBounds="true" preserveRatio="true">
+         <HBox.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </HBox.margin>
+         <Image url="@back.png" />
+      </ImageView>
+      <ImageView fx:id="playButton" fitHeight="70.0" fitWidth="70.0" onMouseEntered="#onMousePlaybuttonEntered" onMouseExited="#onMousePlaybuttonExited" onMousePressed="#onMousePlaybuttonPressed" onMouseReleased="#onMousePlaybuttonReleased" pickOnBounds="true" preserveRatio="true">
+         <HBox.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </HBox.margin>
+         <Image url="@play.png" />
+      </ImageView>
+      <ImageView fx:id="forwardButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseForwardbuttonEntered" onMouseExited="#onMouseForwardbuttonExited" onMousePressed="#onMouseForwardbuttonPressed" onMouseReleased="#onMouseForwardbuttonReleased" pickOnBounds="true" preserveRatio="true">
+         <HBox.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </HBox.margin>
+         <Image url="@forward.png" />
+      </ImageView>
+      <ImageView fx:id="nextButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseNextbuttonEntered" onMouseExited="#onMouseNextbuttonExited" onMousePressed="#onMouseNextbuttonPressed" onMouseReleased="#onMouseNextbuttonReleased" pickOnBounds="true" preserveRatio="true">
+         <HBox.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </HBox.margin>
+         <Image url="@next.png" />
+      </ImageView>
+      <ImageView fx:id="volumeButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseVolumebuttonEntered" onMouseExited="#onMouseVolumebuttonExited" onMousePressed="#onMouseVolumebuttonPressed" onMouseReleased="#onMouseVolumebuttonReleased" pickOnBounds="true" preserveRatio="true">
+         <Image url="@volume.png" />
+         <HBox.margin>
+            <Insets left="40.0" />
+         </HBox.margin>
+      </ImageView>
+   </HBox>
+</StackPane>

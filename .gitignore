@@ -2,5 +2,6 @@ out/
 lib/
 .idea/
 excluded/
+target/
 
 *.iml
