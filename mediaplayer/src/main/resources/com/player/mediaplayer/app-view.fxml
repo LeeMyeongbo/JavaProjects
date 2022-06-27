@@ -1,54 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.media.*?>
+<?import javafx.scene.text.*?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
+<StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
    <MediaView fx:id="mediaArea" fitHeight="650.0" fitWidth="850.0" StackPane.alignment="CENTER" />
-   <HBox alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="100.0" prefWidth="600.0" StackPane.alignment="BOTTOM_CENTER">
-      <ImageView fx:id="settingButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseSettingsEntered" onMouseExited="#onMouseSettingsExited" onMousePressed="#onMouseSettingsPressed" onMouseReleased="#onMouseSettingsReleased" pickOnBounds="true" preserveRatio="true">
-         <HBox.margin>
-            <Insets right="40.0" />
-         </HBox.margin>
-         <Image url="@settings.png" />
-      </ImageView>
-      <ImageView fx:id="preButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMousePrebuttonEntered" onMouseExited="#onMousePrebuttonExited" onMousePressed="#onMousePrebuttonPressed" onMouseReleased="#onMousePrebuttonReleased" pickOnBounds="true" preserveRatio="true">
+   <HBox id="buttonbox" fx:id="buttonArea" alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="100.0" prefWidth="400.0" stylesheets="@app-style.css" StackPane.alignment="BOTTOM_CENTER">
+      <ImageView fx:id="oneButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseOnebuttonEntered" onMouseExited="#onMouseOnebuttonExited" onMousePressed="#onMouseOnebuttonPressed" onMouseReleased="#onMouseOnebuttonReleased" pickOnBounds="true" preserveRatio="true">
          <HBox.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </HBox.margin>
-         <Image url="@pre.png" />
+         <Image url="@one.png" />
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
       </ImageView>
       <ImageView fx:id="backButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseBackbuttonEntered" onMouseExited="#onMouseBackbuttonExited" onMousePressed="#onMouseBackbuttonPressed" onMouseReleased="#onMouseBackbuttonReleased" pickOnBounds="true" preserveRatio="true">
          <HBox.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </HBox.margin>
          <Image url="@back.png" />
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
       </ImageView>
       <ImageView fx:id="playButton" fitHeight="70.0" fitWidth="70.0" onMouseEntered="#onMousePlaybuttonEntered" onMouseExited="#onMousePlaybuttonExited" onMousePressed="#onMousePlaybuttonPressed" onMouseReleased="#onMousePlaybuttonReleased" pickOnBounds="true" preserveRatio="true">
          <HBox.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </HBox.margin>
          <Image url="@play.png" />
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
       </ImageView>
       <ImageView fx:id="forwardButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseForwardbuttonEntered" onMouseExited="#onMouseForwardbuttonExited" onMousePressed="#onMouseForwardbuttonPressed" onMouseReleased="#onMouseForwardbuttonReleased" pickOnBounds="true" preserveRatio="true">
          <HBox.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </HBox.margin>
          <Image url="@forward.png" />
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
       </ImageView>
-      <ImageView fx:id="nextButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseNextbuttonEntered" onMouseExited="#onMouseNextbuttonExited" onMousePressed="#onMouseNextbuttonPressed" onMouseReleased="#onMouseNextbuttonReleased" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="repeatButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseRepeatbuttonEntered" onMouseExited="#onMouseRepeatbuttonExited" onMousePressed="#onMouseRepeatbuttonPressed" onMouseReleased="#onMouseRepeatbuttonReleased" pickOnBounds="true" preserveRatio="true">
          <HBox.margin>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </HBox.margin>
-         <Image url="@next.png" />
+         <Image url="@repeat.png" />
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
       </ImageView>
+   </HBox>
+   <ToolBar fx:id="toolbar" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="33.6" StackPane.alignment="TOP_CENTER">
+      <Button contentDisplay="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#openMedia">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <graphic>
+            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+               <Image url="@add-video.png" />
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+         </graphic>
+      </Button>
+      <Button mnemonicParsing="false">
+         <graphic>
+            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+               <Image url="@setting.png" />
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+         </graphic>
+      </Button>
+   </ToolBar>
+   <Text fx:id="volumeText" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="20" textAlignment="CENTER" visible="false" StackPane.alignment="BOTTOM_RIGHT">
+      <font>
+         <Font name="Marlett" size="20.0" />
+      </font>
+      <StackPane.margin>
+         <Insets bottom="100.0" right="26.0" />
+      </StackPane.margin>
+   </Text>
+   <HBox fx:id="volumeArea" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="100.0" StackPane.alignment="BOTTOM_RIGHT">
       <ImageView fx:id="volumeButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseVolumebuttonEntered" onMouseExited="#onMouseVolumebuttonExited" onMousePressed="#onMouseVolumebuttonPressed" onMouseReleased="#onMouseVolumebuttonReleased" pickOnBounds="true" preserveRatio="true">
          <Image url="@volume.png" />
          <HBox.margin>
-            <Insets left="40.0" />
+            <Insets right="5.0" />
          </HBox.margin>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
       </ImageView>
+      <Slider fx:id="volumeSlider" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onMouseSliderClicked" onMouseEntered="#onMouseSliderEntered" onMouseExited="#onMouseSliderExited" orientation="VERTICAL" prefHeight="90.0" prefWidth="30.0">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <HBox.margin>
+            <Insets right="20.0" />
+         </HBox.margin>
+      </Slider>
    </HBox>
 </StackPane>
