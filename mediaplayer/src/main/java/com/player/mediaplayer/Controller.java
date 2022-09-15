@@ -9,8 +9,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
@@ -27,15 +26,17 @@ import java.net.URL;
 import java.util.*;
 
 public class Controller implements Initializable {
-    private boolean isRepeating;
-    private int mouse_stop;
+    private boolean isRepeating, isFinding, isPlaybarMouseOn;
+    private int mouse_stop, move_into = 10;
     private double sound = 20.0;
     private Timer timer;
+    private final String playbarStyle = "-fx-background-color: linear-gradient(to right, #0303f2 %f%%, #15ff00 %f%%);\n-fx-pref-height: %d;";
     @FXML private ToolBar toolbar;
     @FXML private StackPane appArea;
     @FXML private ImageView playButton, backButton, forwardButton, oneButton, repeatButton, volumeButton;
     @FXML private MediaView mediaArea;
     @FXML private HBox buttonArea, volumeArea;
+    @FXML private Slider playSlider;
     @FXML private Slider volumeSlider;
     @FXML private Text volumeText;
 
@@ -64,9 +65,15 @@ public class Controller implements Initializable {
             mouseEvent.consume();
         });
 
-        // slider 로 볼륨 조절 시
         volumeSlider.setValue(sound);
-        volumeSlider.setOnMouseDragged((e) -> adjustVolume());
+        volumeSlider.setOnMouseDragged(e -> adjustVolume());
+        playSlider.setOnMouseDragged(e -> findPosition());
+        playSlider.valueProperty().addListener((observableValue, number, t1) -> {
+            if (isPlaybarMouseOn)
+                playSlider.lookup(".track").setStyle(String.format(playbarStyle, t1.doubleValue() * 100, t1.doubleValue() * 100, 8));
+            else
+                playSlider.lookup(".track").setStyle(String.format(playbarStyle, t1.doubleValue() * 100, t1.doubleValue() * 100, 2));
+        });
 
         // 창 크기에 따라서 영상 사이즈 변경
         DoubleProperty width = mediaArea.fitWidthProperty();
@@ -106,14 +113,15 @@ public class Controller implements Initializable {
         dialog.showAndWait();
     }
 
-    /* 마우스 + 툴바 + 버튼들 안 보이도록 함 */
+    /* 컴포넌트들 보이거나 안 보이도록 함 */
     public void setVisibleOrNot(boolean v) {
         toolbar.setVisible(v);
         buttonArea.setVisible(v);
         volumeArea.setVisible(v);
+        playSlider.setVisible(v);
     }
 
-    /* 영상 재생 */
+    /* 영상 재생 시 */
     public void playMedia(File file) {
         try {
             isRepeating = false;
@@ -122,16 +130,26 @@ public class Controller implements Initializable {
             Media media = new Media(file.toURI().toString());
             MediaPlayer player = new MediaPlayer(media);
             player.setVolume(sound / 100.0);
-            mediaArea.setMediaPlayer(player);
-            mediaArea.getMediaPlayer().setOnEndOfMedia(() -> {
-                mediaArea.getMediaPlayer().stop();
+            player.setOnReady(() -> {
+                if (!isFinding) {
+                    player.currentTimeProperty().addListener((observableValue, duration, t1) -> {
+                        double progress = player.getCurrentTime().toSeconds() / player.getTotalDuration().toSeconds();
+                        playSlider.setValue(progress);
+                    });
+                }
+            });
+            player.setOnEndOfMedia(() -> {
+                player.stop();
+                player.seek(Duration.ZERO);
                 playButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("play.png"))));
                 appArea.setCursor(Cursor.DEFAULT);
                 mouse_stop = 0;
+                playSlider.setValue(0.0);
                 timer.cancel();
                 timer = null;
                 setVisibleOrNot(true);
             });
+            mediaArea.setMediaPlayer(player);
         } catch (NullPointerException ignored) {
 
         } catch (Exception e) {
@@ -139,6 +157,7 @@ public class Controller implements Initializable {
         }
     }
 
+    /* 볼륨 조절 시 */
     public void adjustVolume() {
         onMouseMoved();
 
@@ -154,6 +173,16 @@ public class Controller implements Initializable {
             player.setVolume(sound / 100.0);
     }
 
+    /* 재생 바로 현재 위치 직접 찾을 때 */
+    public void findPosition() {
+        onMouseMoved();
+
+        double pos = playSlider.getValue();
+        MediaPlayer player = mediaArea.getMediaPlayer();
+        if (player != null)
+            player.seek(Duration.seconds(pos * player.getTotalDuration().toSeconds()));
+    }
+
     /* 툴바 내 동영상 추가 버튼 눌렀을 때 directory 에서 영상 추가할 수 있도록 함 */
     @FXML
     public void openMedia() {
@@ -164,14 +193,25 @@ public class Controller implements Initializable {
         playMedia(file);
     }
 
-    /* 마우스 움직였을 경우 다시 툴바 + 마우스 + 버튼들 보이도록 함 */
+    /* 설정 버튼 눌렀을 때 설정 창 엶 */
+    @FXML
+    public void openSetting() {
+        Stage setting = new Stage();
+        setting.setTitle("설정");
+        setting.initModality(Modality.APPLICATION_MODAL);
+        setting.setWidth(400);
+        setting.setHeight(300);
+        setting.showAndWait();
+        // TBD...
+    }
+
+    /* 마우스가 응용프로그램 내에서 움직일 때 or 프로그램 밖으로 나갈 때 관련 이벤트 처리 */
     @FXML
     public void onMouseMoved() {
         setVisibleOrNot(true);
         appArea.setCursor(Cursor.DEFAULT);
         mouse_stop = 0;
     }
-    /* 마우스가 영상 재생 중일 때 app 영역 빠져나가면 툴바 + 버튼들 안 보이도록 설정 */
     @FXML
     public void onMouseExited() {
         MediaPlayer player = mediaArea.getMediaPlayer();
@@ -179,6 +219,7 @@ public class Controller implements Initializable {
             setVisibleOrNot(false);
     }
 
+    /* 재생 버튼 관련 이벤트 */
     @FXML
     public void onMousePlaybuttonEntered() {
         MediaPlayer player = mediaArea.getMediaPlayer();
@@ -225,6 +266,7 @@ public class Controller implements Initializable {
         }
     }
 
+    /* 영상 N초 앞으로 이동 버튼 관련 이벤트 */
     @FXML
     public void onMouseForwardbuttonEntered() {
         forwardButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("forward-moused.png"))));
@@ -240,8 +282,15 @@ public class Controller implements Initializable {
     @FXML
     public void onMouseForwardbuttonReleased() {
         forwardButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("forward-moused.png"))));
+        MediaPlayer player = mediaArea.getMediaPlayer();
+        if (player != null) {
+            double time = player.getCurrentTime().toSeconds() + move_into;
+            player.seek(Duration.seconds(time));
+            playSlider.setValue(time / player.getTotalDuration().toSeconds());
+        }
     }
 
+    /* 영상 N초 뒤로 이동 버튼 관련 이벤트 */
     @FXML
     public void onMouseBackbuttonEntered() {
         backButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("back-moused.png"))));
@@ -257,8 +306,15 @@ public class Controller implements Initializable {
     @FXML
     public void onMouseBackbuttonReleased() {
         backButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("back-moused.png"))));
+        MediaPlayer player = mediaArea.getMediaPlayer();
+        if (player != null) {
+            double time = player.getCurrentTime().toSeconds() - move_into;
+            player.seek(Duration.seconds(time));
+            playSlider.setValue(time / player.getTotalDuration().toSeconds());
+        }
     }
 
+    /* 영상 한 번만 재생 버튼 관련 이벤트 */
     @FXML
     public void onMouseOnebuttonEntered() {
         oneButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("one-moused.png"))));
@@ -296,6 +352,7 @@ public class Controller implements Initializable {
             oneButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("one-moused.png"))));
     }
 
+    /* 영상 반복 재생 버튼 관련 이벤트 */
     @FXML
     public void onMouseRepeatbuttonEntered() {
         repeatButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("repeat-moused.png"))));
@@ -325,6 +382,7 @@ public class Controller implements Initializable {
             repeatButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("repeat-moused.png"))));
     }
 
+    /* 볼륨 버튼 관련 이벤트 */
     @FXML
     public void onMouseVolumebuttonEntered() {
         if (sound > 0)
@@ -364,17 +422,42 @@ public class Controller implements Initializable {
             player.setVolume(sound);
     }
 
+    /* 볼륨 바 관련 이벤트 */
     @FXML
-    public void onMouseSliderEntered() {
+    public void onMouseVolumebarEntered() {
         volumeText.setVisible(true);
     }
     @FXML
-    public void onMouseSliderExited() {
+    public void onMouseVolumebarExited() {
         volumeText.setVisible(false);
     }
     @FXML
-    public void onMouseSliderClicked() {
+    public void onMouseVolumebarPressed() {
+    }
+    @FXML
+    public void onMouseVolumebarReleased() {
         adjustVolume();
+    }
+
+    /* 재생 바 관련 이벤트 */
+    @FXML
+    public void onMousePlaybarEntered() {
+        isPlaybarMouseOn = true;
+        playSlider.lookup(".track").setStyle(String.format(playbarStyle, playSlider.getValue() * 100, playSlider.getValue() * 100, 8));
+    }
+    @FXML
+    public void onMousePlaybarExited() {
+        isPlaybarMouseOn = false;
+        playSlider.lookup(".track").setStyle(String.format(playbarStyle, playSlider.getValue() * 100, playSlider.getValue() * 100, 2));
+    }
+    @FXML
+    public void onMousePlaybarPressed() {
+        isFinding = true;
+        findPosition();
+    }
+    @FXML
+    public void onMousePlaybarReleased() {
+        isFinding = false;
     }
 
     /* 동영상 플레이어 창 닫을 시 timer 동작하고 있다면 먼저 종료시킴 */

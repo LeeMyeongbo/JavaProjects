@@ -3,12 +3,13 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.media.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
+<StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
    <MediaView fx:id="mediaArea" fitHeight="650.0" fitWidth="850.0" StackPane.alignment="CENTER" />
    <HBox id="buttonbox" fx:id="buttonArea" alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="100.0" prefWidth="400.0" stylesheets="@app-style.css" StackPane.alignment="BOTTOM_CENTER">
       <ImageView fx:id="oneButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseOnebuttonEntered" onMouseExited="#onMouseOnebuttonExited" onMousePressed="#onMouseOnebuttonPressed" onMouseReleased="#onMouseOnebuttonReleased" pickOnBounds="true" preserveRatio="true">
@@ -71,7 +72,7 @@
             </ImageView>
          </graphic>
       </Button>
-      <Button mnemonicParsing="false">
+      <Button mnemonicParsing="false" onAction="#openSetting">
          <graphic>
             <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                <Image url="@setting.png" />
@@ -87,7 +88,7 @@
          <Font name="Marlett" size="20.0" />
       </font>
       <StackPane.margin>
-         <Insets bottom="100.0" right="26.0" />
+         <Insets bottom="120.0" right="26.0" />
       </StackPane.margin>
    </Text>
    <HBox fx:id="volumeArea" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="100.0" StackPane.alignment="BOTTOM_RIGHT">
@@ -100,7 +101,7 @@
             <Cursor fx:constant="HAND" />
          </cursor>
       </ImageView>
-      <Slider fx:id="volumeSlider" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#onMouseSliderClicked" onMouseEntered="#onMouseSliderEntered" onMouseExited="#onMouseSliderExited" orientation="VERTICAL" prefHeight="90.0" prefWidth="30.0">
+      <Slider fx:id="volumeSlider" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseEntered="#onMouseVolumebarEntered" onMouseExited="#onMouseVolumebarExited" onMousePressed="#onMouseVolumebarPressed" onMouseReleased="#onMouseVolumebarReleased" orientation="VERTICAL" prefHeight="90.0" prefWidth="30.0">
          <cursor>
             <Cursor fx:constant="HAND" />
          </cursor>
@@ -109,4 +110,22 @@
          </HBox.margin>
       </Slider>
    </HBox>
+   <Slider id="playslider" fx:id="playSlider" max="1.0" maxHeight="25.0" onMouseEntered="#onMousePlaybarEntered" onMouseExited="#onMousePlaybarExited" onMousePressed="#onMousePlaybarPressed" onMouseReleased="#onMousePlaybarReleased" prefHeight="25.0" stylesheets="@playbar_style.css" StackPane.alignment="BOTTOM_CENTER">
+      <effect>
+         <Lighting specularConstant="0.77" specularExponent="6.17" surfaceScale="4.3">
+            <light>
+               <Light.Distant />
+            </light>
+            <bumpInput>
+               <Glow />
+            </bumpInput>
+         </Lighting>
+      </effect>
+      <StackPane.margin>
+         <Insets bottom="100.0" left="5.0" right="5.0" />
+      </StackPane.margin>
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </Slider>
 </StackPane>
