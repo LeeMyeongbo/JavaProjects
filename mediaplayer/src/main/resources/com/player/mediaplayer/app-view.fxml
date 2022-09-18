@@ -58,31 +58,6 @@
          </cursor>
       </ImageView>
    </HBox>
-   <ToolBar fx:id="toolbar" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="33.6" StackPane.alignment="TOP_CENTER">
-      <Button contentDisplay="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#openMedia">
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-         <graphic>
-            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@add-video.png" />
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-            </ImageView>
-         </graphic>
-      </Button>
-      <Button mnemonicParsing="false" onAction="#openSetting">
-         <graphic>
-            <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-               <Image url="@setting.png" />
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-            </ImageView>
-         </graphic>
-      </Button>
-   </ToolBar>
    <Text fx:id="volumeText" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="20" textAlignment="CENTER" visible="false" StackPane.alignment="BOTTOM_RIGHT">
       <font>
          <Font name="Marlett" size="20.0" />
@@ -109,6 +84,26 @@
             <Insets right="20.0" />
          </HBox.margin>
       </Slider>
+   </HBox>
+   <HBox fx:id="etcArea" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="200.0" StackPane.alignment="BOTTOM_LEFT">
+      <ImageView fx:id="fileButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseFileButtonEntered" onMouseExited="#onMouseFileButtonExited" onMousePressed="#onMouseFileButtonPressed" onMouseReleased="#onMouseFileButtonReleased" pickOnBounds="true" preserveRatio="true">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <HBox.margin>
+            <Insets bottom="5.0" left="5.0" right="20.0" top="5.0" />
+         </HBox.margin>
+         <Image url="@folder.png" />
+      </ImageView>
+      <ImageView fx:id="settingButton" fitHeight="45.0" fitWidth="45.0" onMouseEntered="#onMouseSettingButtonEntered" onMouseExited="#onMouseSettingButtonExited" onMousePressed="#onMouseSettingButtonPressed" onMouseReleased="#onMouseSettingButtonReleased" pickOnBounds="true" preserveRatio="true">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <HBox.margin>
+            <Insets bottom="5.0" left="20.0" right="5.0" top="5.0" />
+         </HBox.margin>
+         <Image url="@setting.png" />
+      </ImageView>
    </HBox>
    <Slider id="playslider" fx:id="playSlider" max="1.0" maxHeight="25.0" onMouseEntered="#onMousePlaybarEntered" onMouseExited="#onMousePlaybarExited" onMousePressed="#onMousePlaybarPressed" onMouseReleased="#onMousePlaybarReleased" prefHeight="25.0" stylesheets="@playbar_style.css" StackPane.alignment="BOTTOM_CENTER">
       <effect>
