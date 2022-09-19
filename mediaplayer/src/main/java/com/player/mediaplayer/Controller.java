@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
 import javafx.scene.control.Slider;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
@@ -21,15 +22,17 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
 public class Controller implements Initializable {
-    private boolean isRepeating, isFinding, isPlaybarMouseOn, isPlayMouseOn, isForwardMouseOn, isBackwardMouseOn, isFileMouseOn;
+    private boolean isRepeating, isFinding, isPlaybarMouseOn, isPlayMouseOn, isForwardMouseOn, isBackwardMouseOn, isFileMouseOn, isFullScreen;
     private int mouse_stop, move_into = 10;
     private double sound = 20.0;
-    private Timer timer;
     private final String playbarStyle = "-fx-background-color: linear-gradient(to right, #0303f2 %f%%, #15ff00 %f%%);\n-fx-pref-height: %d;";
+    private Timer timer;
+    private Tooltip tooltip;
     @FXML private StackPane appArea;
     @FXML private ImageView playButton, backButton, forwardButton, oneButton, repeatButton, volumeButton, fileButton, settingButton;
     @FXML private MediaView mediaArea;
@@ -80,22 +83,27 @@ public class Controller implements Initializable {
                                 playButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("pause.png"))));
                         }
                     }
-                }
-                case RIGHT -> {
+                } case RIGHT -> {
                     onMouseForwardbuttonReleased();
                     if (!isForwardMouseOn)
                         onMouseForwardbuttonExited();
-                }
-                case LEFT -> {
+                } case LEFT -> {
                     onMouseBackbuttonReleased();
                     if (!isBackwardMouseOn)
                         onMouseBackbuttonExited();
+                } case ENTER -> {
+                    isFullScreen = !isFullScreen;
+                    ((Stage)mediaArea.getScene().getWindow()).setFullScreenExitHint("");
+                    ((Stage)mediaArea.getScene().getWindow()).setFullScreen(isFullScreen);
                 }
             }
         });
 
+        // 볼륨 바 value, 드래그 관련 설정
         volumeSlider.setValue(sound);
         volumeSlider.setOnMouseDragged(e -> adjustVolume());
+
+        // 재생 바 드래그 및 value 변화 시 관련 설정
         playSlider.setOnMouseDragged(e -> findPosition());
         playSlider.valueProperty().addListener((observableValue, number, t1) -> {
             if (isPlaybarMouseOn)
@@ -114,6 +122,8 @@ public class Controller implements Initializable {
             volumeButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("volume.png"))));
         else
             volumeButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("mute.png"))));
+
+        tooltip = new Tooltip();
     }
 
     /* 영상 재생 중일 때 마우스가 멈춰 있는 시간 측정 -> 3초 이상 움직이지 않았을 때 setVisibleOrNot 실행 */
@@ -206,25 +216,32 @@ public class Controller implements Initializable {
     /* 재생 바로 현재 위치 직접 찾을 때 */
     public void findPosition() {
         onMouseMoved();
-
         double pos = playSlider.getValue();
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null)
             player.seek(Duration.seconds(pos * player.getTotalDuration().toSeconds()));
     }
 
-    /* 마우스가 응용프로그램 내에서 움직일 때 or 프로그램 밖으로 나갈 때 관련 이벤트 처리 */
+    /* 마우스가 응용프로그램 내에서 움직일 때 or 프로그램 밖으로 나갈 때 or 더블 클릭 시 관련 이벤트 처리 */
     @FXML
-    public void onMouseMoved() {
+    public void onMouseMoved() {            // 프로그램 내에서 마우스 움직일 땐 버튼들 및 slider 들 보이게 설정
         setVisibleOrNot(1.0);
         appArea.setCursor(Cursor.DEFAULT);
         mouse_stop = 0;
     }
     @FXML
-    public void onMouseExited() {
+    public void onMouseExited() {           // 프로그램 밖으로 마우스가 빠져나가면 안 보이게끔 설정
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
             setVisibleOrNot(0.0);
+    }
+    @FXML
+    public void onMouseDoubleClick(MouseEvent mouseEvent) {         // 더블 클릭 시 전체화면
+        if (mouseEvent.getClickCount() == 2) {
+            isFullScreen = !isFullScreen;
+            ((Stage)mediaArea.getScene().getWindow()).setFullScreenExitHint("");
+            ((Stage)mediaArea.getScene().getWindow()).setFullScreen(isFullScreen);
+        }
     }
 
     /* 재생 버튼 관련 이벤트 */
@@ -232,10 +249,14 @@ public class Controller implements Initializable {
     public void onMousePlaybuttonEntered() {
         isPlayMouseOn = true;
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
+        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING) {
             playButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("pause-moused.png"))));
-        else
+            tooltip.setText("일시 정지");
+        } else {
             playButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("play-moused.png"))));
+            tooltip.setText("재생");
+        }
+        Tooltip.install(playButton.getParent(), tooltip);
     }
     @FXML
     public void onMousePlaybuttonExited() {
@@ -245,6 +266,7 @@ public class Controller implements Initializable {
             playButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("pause.png"))));
         else
             playButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("play.png"))));
+        Tooltip.uninstall(playButton.getParent(), tooltip);
     }
     @FXML
     public void onMousePlaybuttonPressed() {
@@ -279,11 +301,14 @@ public class Controller implements Initializable {
     @FXML
     public void onMouseForwardbuttonEntered() {
         isForwardMouseOn = true;
+        tooltip.setText("앞으로 " + move_into + "초 이동");
+        Tooltip.install(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("forward-moused.png"))));
     }
     @FXML
     public void onMouseForwardbuttonExited() {
         isForwardMouseOn = false;
+        Tooltip.uninstall(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("forward.png"))));
     }
     @FXML
@@ -305,11 +330,14 @@ public class Controller implements Initializable {
     @FXML
     public void onMouseBackbuttonEntered() {
         isBackwardMouseOn = true;
+        tooltip.setText("뒤로 " + move_into + "초 이동");
+        Tooltip.install(backButton.getParent(), tooltip);
         backButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("back-moused.png"))));
     }
     @FXML
     public void onMouseBackbuttonExited() {
         isBackwardMouseOn = false;
+        Tooltip.uninstall(backButton.getParent(), tooltip);
         backButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("back.png"))));
     }
     @FXML
@@ -330,10 +358,13 @@ public class Controller implements Initializable {
     /* 영상 한 번만 재생 버튼 관련 이벤트 */
     @FXML
     public void onMouseOnebuttonEntered() {
+        tooltip.setText("한 번만 재생");
+        Tooltip.install(oneButton.getParent(), tooltip);
         oneButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("one-moused.png"))));
     }
     @FXML
     public void onMouseOnebuttonExited() {
+        Tooltip.uninstall(oneButton.getParent(), tooltip);
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && !isRepeating)
             oneButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("one-selected.png"))));
@@ -367,10 +398,13 @@ public class Controller implements Initializable {
     /* 영상 반복 재생 버튼 관련 이벤트 */
     @FXML
     public void onMouseRepeatbuttonEntered() {
+        tooltip.setText("반복 재생");
+        Tooltip.install(repeatButton.getParent(), tooltip);
         repeatButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("repeat-moused.png"))));
     }
     @FXML
     public void onMouseRepeatbuttonExited() {
+        Tooltip.uninstall(repeatButton.getParent(), tooltip);
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && isRepeating)
             repeatButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("repeat-selected.png"))));
@@ -398,11 +432,14 @@ public class Controller implements Initializable {
     @FXML
     public void onMouseFileButtonEntered() {
         isFileMouseOn = true;
+        tooltip.setText("동영상 추가");
+        Tooltip.install(fileButton.getParent(), tooltip);
         fileButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("folder-moused.png"))));
     }
     @FXML
     public void onMouseFileButtonExited() {
         isFileMouseOn = false;
+        Tooltip.uninstall(fileButton.getParent(), tooltip);
         fileButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("folder.png"))));
     }
     @FXML
@@ -422,10 +459,13 @@ public class Controller implements Initializable {
     /* 설정 버튼 관련 이벤트 */
     @FXML
     public void onMouseSettingButtonEntered() {
+        tooltip.setText("설정");
+        Tooltip.install(settingButton.getParent(), tooltip);
         settingButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("setting-moused.png"))));
     }
     @FXML
     public void onMouseSettingButtonExited() {
+        Tooltip.uninstall(settingButton.getParent(), tooltip);
         settingButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("setting.png"))));
     }
     @FXML
@@ -433,25 +473,23 @@ public class Controller implements Initializable {
         settingButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("setting-pressed.png"))));
     }
     @FXML
-    public void onMouseSettingButtonReleased() {    // 버튼 눌렀다 떼었을 때 설정 창 오픈
+    public void onMouseSettingButtonReleased() throws IOException {    // 버튼 눌렀다 떼었을 때 설정 창 오픈
         settingButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("setting-moused.png"))));
-        Stage setting = new Stage();
-        setting.setTitle("설정");
-        setting.getIcons().add(new Image(Objects.requireNonNull(AppMain.class.getResource("settingicon.png")).toExternalForm()));
-        setting.initModality(Modality.APPLICATION_MODAL);
-        setting.setWidth(400);
-        setting.setHeight(300);
-        setting.showAndWait();
-        // TBD...
+        SettingStage settingStage = new SettingStage();
+        settingStage.showAndWait();
     }
 
     /* 볼륨 버튼 관련 이벤트 */
     @FXML
     public void onMouseVolumebuttonEntered() {
-        if (sound > 0)
+        if (sound > 0) {
             volumeButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("volume-moused.png"))));
-        else
+            tooltip.setText("볼륨");
+        } else {
             volumeButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("mute-moused.png"))));
+            tooltip.setText("음소거");
+        }
+        Tooltip.install(volumeButton.getParent(), tooltip);
     }
     @FXML
     public void onMouseVolumebuttonExited() {
@@ -459,6 +497,7 @@ public class Controller implements Initializable {
             volumeButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("volume.png"))));
         else
             volumeButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("mute.png"))));
+        Tooltip.uninstall(volumeButton.getParent(), tooltip);
     }
     @FXML
     public void onMouseVolumebuttonPressed() {

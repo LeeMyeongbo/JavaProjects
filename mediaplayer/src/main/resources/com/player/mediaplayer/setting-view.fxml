@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.SettingController">
+   <ChoiceBox fx:id="moveTimeBox" layoutX="338.0" layoutY="26.0" prefWidth="150.0">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </ChoiceBox>
+   <Separator layoutX="24.0" layoutY="66.0" prefHeight="9.0" prefWidth="553.0" />
+   <Label layoutX="24.0" layoutY="23.0" prefHeight="30.0" prefWidth="300.0" text="앞으로/뒤로 이동 시 건너뛸 시간(초) :" textAlignment="CENTER">
+      <font>
+         <Font size="17.0" />
+      </font>
+   </Label>
+   <Label layoutX="24.0" layoutY="93.0" text="시작 시 볼륨 :">
+      <font>
+         <Font size="17.0" />
+      </font>
+   </Label>
+   <Slider fx:id="startVolumeSlider" layoutX="162.0" layoutY="94.0" prefHeight="18.0" prefWidth="293.0" value="20.0">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </Slider>
+   <Button fx:id="confirmButton" layoutX="315.0" layoutY="356.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="75.0" text="확인">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </Button>
+   <Button fx:id="cancelButton" layoutX="400.0" layoutY="356.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="75.0" text="취소">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </Button>
+   <Button fx:id="applyButton" layoutX="489.0" layoutY="356.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="75.0" text="적용">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </Button>
+   <Label fx:id="startVolumeLabel" layoutX="497.0" layoutY="85.0" text="20">
+      <font>
+         <Font name="Goudy Old Style" size="30.0" />
+      </font>
+   </Label>
+   <Label layoutX="24.0" layoutY="164.0" text="버튼 사라지는 시간(초) :">
+      <font>
+         <Font size="17.0" />
+      </font>
+   </Label>
+   <Separator layoutX="24.0" layoutY="136.0" prefHeight="9.0" prefWidth="553.0" />
+   <ChoiceBox fx:id="vanishTimeBox" layoutX="240.0" layoutY="163.0" prefWidth="150.0">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </ChoiceBox>
+   <Separator layoutX="24.0" layoutY="207.0" prefHeight="9.0" prefWidth="553.0" />
+   <Label layoutX="33.0" layoutY="302.0">
+      <font>
+         <Font size="17.0" />
+      </font>
+   </Label>
+   <Label layoutX="24.0" layoutY="236.0" text="버튼 투명도 : ">
+      <font>
+         <Font size="17.0" />
+      </font>
+   </Label>
+   <Slider fx:id="opacitySlider" layoutX="162.0" layoutY="237.0" max="1.0" prefHeight="18.0" prefWidth="293.0" value="1.0">
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </Slider>
+   <Separator layoutX="24.0" layoutY="277.0" prefHeight="9.0" prefWidth="553.0" />
+   <Label fx:id="opacityLabel" layoutX="505.0" layoutY="228.0" text="1">
+      <font>
+         <Font name="Goudy Old Style" size="30.0" />
+      </font>
+   </Label>
+   <CheckBox fx:id="autoStartCheck" layoutX="408.0" layoutY="301.0" mnemonicParsing="false" text="부팅 시 자동실행">
+      <font>
+         <Font size="17.0" />
+      </font>
+      <cursor>
+         <Cursor fx:constant="HAND" />
+      </cursor>
+   </CheckBox>
+</AnchorPane>
