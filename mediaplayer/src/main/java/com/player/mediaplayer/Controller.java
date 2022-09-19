@@ -437,10 +437,12 @@ public class Controller implements Initializable {
         settingButton.setImage(new Image(Objects.requireNonNull(Controller.class.getResourceAsStream("setting-moused.png"))));
         Stage setting = new Stage();
         setting.setTitle("설정");
+        setting.getIcons().add(new Image(Objects.requireNonNull(AppMain.class.getResource("settingicon.png")).toExternalForm()));
         setting.initModality(Modality.APPLICATION_MODAL);
         setting.setWidth(400);
         setting.setHeight(300);
         setting.showAndWait();
+        // TBD...
     }
 
     /* 볼륨 버튼 관련 이벤트 */
