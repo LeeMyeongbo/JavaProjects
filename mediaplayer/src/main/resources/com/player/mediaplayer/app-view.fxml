@@ -9,161 +9,131 @@
 <?import javafx.scene.media.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
-   <children>
-      <MediaView fx:id="mediaArea" fitHeight="650.0" fitWidth="850.0" onMouseClicked="#onMouseDoubleClick" StackPane.alignment="CENTER" />
-      <VBox id="buttonbox" fx:id="bgArea" alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0">
-         <children>
-            <AnchorPane>
-               <children>
-                  <Label fx:id="curTimeLabel" text="00:00:00" textFill="WHITE" AnchorPane.leftAnchor="15.0">
-                     <font>
-                        <Font name="Arial" size="12.0" />
-                     </font>
-                  </Label>
-                  <Label fx:id="endTimeLabel" alignment="CENTER_RIGHT" layoutX="792.0" text="00:00:00" textFill="WHITE" AnchorPane.rightAnchor="15.0">
-                     <font>
-                        <Font name="Arial" size="12.0" />
-                     </font>
-                  </Label>
-               </children>
-            </AnchorPane>
-            <Slider id="playslider" fx:id="playSlider" max="1.0" maxHeight="26.0" onMouseEntered="#onMousePlaybarEntered" onMouseExited="#onMousePlaybarExited" onMousePressed="#onMousePlaybarPressed" onMouseReleased="#onMousePlaybarReleased" prefHeight="26.0" prefWidth="792.0" stylesheets="@playbar_style.css">
-               <effect>
-                  <Lighting specularConstant="0.77" specularExponent="6.17" surfaceScale="4.3">
-                     <light>
-                        <Light.Distant />
-                     </light>
-                     <bumpInput>
-                        <Glow />
-                     </bumpInput>
-                  </Lighting>
-               </effect>
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-               <VBox.margin>
-                  <Insets left="5.0" right="5.0" />
-               </VBox.margin>
-            </Slider>
-            <HBox fx:id="buttonArea" alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="100.0" prefWidth="400.0" stylesheets="@app-style.css">
-               <children>
-                  <ImageView fx:id="oneButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseOnebuttonEntered" onMouseExited="#onMouseOnebuttonExited" onMousePressed="#onMouseOnebuttonPressed" onMouseReleased="#onMouseOnebuttonReleased" pickOnBounds="true" preserveRatio="true">
-                     <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </HBox.margin>
-                     <image>
-                        <Image url="@one.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <ImageView fx:id="backButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseBackbuttonEntered" onMouseExited="#onMouseBackbuttonExited" onMousePressed="#onMouseBackbuttonPressed" onMouseReleased="#onMouseBackbuttonReleased" pickOnBounds="true" preserveRatio="true">
-                     <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </HBox.margin>
-                     <image>
-                        <Image url="@back.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <ImageView fx:id="playButton" fitHeight="70.0" fitWidth="70.0" onMouseEntered="#onMousePlaybuttonEntered" onMouseExited="#onMousePlaybuttonExited" onMousePressed="#onMousePlaybuttonPressed" onMouseReleased="#onMousePlaybuttonReleased" pickOnBounds="true" preserveRatio="true">
-                     <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </HBox.margin>
-                     <image>
-                        <Image url="@play.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <ImageView fx:id="forwardButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseForwardbuttonEntered" onMouseExited="#onMouseForwardbuttonExited" onMousePressed="#onMouseForwardbuttonPressed" onMouseReleased="#onMouseForwardbuttonReleased" pickOnBounds="true" preserveRatio="true">
-                     <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </HBox.margin>
-                     <image>
-                        <Image url="@forward.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-                  <ImageView fx:id="repeatButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseRepeatbuttonEntered" onMouseExited="#onMouseRepeatbuttonExited" onMousePressed="#onMouseRepeatbuttonPressed" onMouseReleased="#onMouseRepeatbuttonReleased" pickOnBounds="true" preserveRatio="true">
-                     <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </HBox.margin>
-                     <image>
-                        <Image url="@repeat.png" />
-                     </image>
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </ImageView>
-               </children>
-            </HBox>
-         </children>
+<StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
+   <MediaView fx:id="mediaArea" fitHeight="650.0" fitWidth="850.0" onMouseClicked="#onMouseDoubleClick" StackPane.alignment="CENTER" />
+   <VBox id="bgArea" fx:id="bgArea" alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0">
+      <AnchorPane>
+         <Label fx:id="curTimeLabel" text="00:00:00" textFill="WHITE" AnchorPane.leftAnchor="15.0">
+            <font>
+               <Font name="Arial" size="12.0" />
+            </font>
+         </Label>
+         <Label fx:id="endTimeLabel" alignment="CENTER_RIGHT" layoutX="792.0" text="00:00:00" textFill="WHITE" AnchorPane.rightAnchor="15.0">
+            <font>
+               <Font name="Arial" size="12.0" />
+            </font>
+         </Label>
+      </AnchorPane>
+      <Slider id="playslider" fx:id="playSlider" max="1.0" maxHeight="26.0" onMouseEntered="#onMousePlaybarEntered" onMouseExited="#onMousePlaybarExited" onMousePressed="#onMousePlaybarPressed" onMouseReleased="#onMousePlaybarReleased" prefHeight="26.0" prefWidth="792.0" stylesheets="@playbar_style.css">
+         <effect>
+            <Lighting specularConstant="0.77" specularExponent="6.17" surfaceScale="4.3">
+               <light>
+                  <Light.Distant />
+               </light>
+               <bumpInput>
+                  <Glow />
+               </bumpInput>
+            </Lighting>
+         </effect>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <VBox.margin>
+            <Insets left="5.0" right="5.0" />
+         </VBox.margin>
+      </Slider>
+      <HBox fx:id="buttonArea" alignment="CENTER" fillHeight="false" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefHeight="100.0" prefWidth="400.0" stylesheets="@app-style.css">
+         <ImageView fx:id="oneButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseOnebuttonEntered" onMouseExited="#onMouseOnebuttonExited" onMousePressed="#onMouseOnebuttonPressed" onMouseReleased="#onMouseOnebuttonReleased" pickOnBounds="true" preserveRatio="true">
+            <HBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </HBox.margin>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+            <Image url="@one.png" />
+         </ImageView>
+         <ImageView fx:id="backButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseBackbuttonEntered" onMouseExited="#onMouseBackbuttonExited" onMousePressed="#onMouseBackbuttonPressed" onMouseReleased="#onMouseBackbuttonReleased" pickOnBounds="true" preserveRatio="true">
+            <HBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </HBox.margin>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+            <Image url="@back.png" />
+         </ImageView>
+         <ImageView fx:id="playButton" fitHeight="70.0" fitWidth="70.0" onMouseEntered="#onMousePlaybuttonEntered" onMouseExited="#onMousePlaybuttonExited" onMousePressed="#onMousePlaybuttonPressed" onMouseReleased="#onMousePlaybuttonReleased" pickOnBounds="true" preserveRatio="true">
+            <HBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </HBox.margin>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+            <Image url="@play.png" />
+         </ImageView>
+         <ImageView fx:id="forwardButton" fitHeight="60.0" fitWidth="60.0" onMouseEntered="#onMouseForwardbuttonEntered" onMouseExited="#onMouseForwardbuttonExited" onMousePressed="#onMouseForwardbuttonPressed" onMouseReleased="#onMouseForwardbuttonReleased" pickOnBounds="true" preserveRatio="true">
+            <HBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </HBox.margin>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+            <Image url="@forward.png" />
+         </ImageView>
+         <ImageView fx:id="repeatButton" fitHeight="50.0" fitWidth="50.0" onMouseEntered="#onMouseRepeatbuttonEntered" onMouseExited="#onMouseRepeatbuttonExited" onMousePressed="#onMouseRepeatbuttonPressed" onMouseReleased="#onMouseRepeatbuttonReleased" pickOnBounds="true" preserveRatio="true">
+            <HBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+            </HBox.margin>
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+            <Image url="@repeat.png" />
+         </ImageView>
+      </HBox>
+   </VBox>
+   <HBox fx:id="volumeArea" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="100.0" StackPane.alignment="BOTTOM_RIGHT">
+      <ImageView fx:id="volumeButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseVolumebuttonEntered" onMouseExited="#onMouseVolumebuttonExited" onMousePressed="#onMouseVolumebuttonPressed" onMouseReleased="#onMouseVolumebuttonReleased" pickOnBounds="true" preserveRatio="true">
+         <HBox.margin>
+            <Insets bottom="20.0" right="5.0" />
+         </HBox.margin>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <Image url="@volume.png" />
+      </ImageView>
+      <VBox prefHeight="200.0" prefWidth="100.0">
+         <Slider fx:id="volumeSlider" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseEntered="#onMouseVolumebarEntered" onMouseExited="#onMouseVolumebarExited" orientation="VERTICAL" prefHeight="75.0" prefWidth="30.0">
+            <cursor>
+               <Cursor fx:constant="HAND" />
+            </cursor>
+         </Slider>
+         <Text fx:id="volumeText" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="20" textAlignment="CENTER" visible="false">
+            <font>
+               <Font name="Marlett" size="20.0" />
+            </font>
+            <VBox.margin>
+               <Insets left="5.0" />
+            </VBox.margin>
+         </Text>
       </VBox>
-      <HBox fx:id="volumeArea" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="100.0" StackPane.alignment="BOTTOM_RIGHT">
-         <children>
-            <ImageView fx:id="volumeButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseVolumebuttonEntered" onMouseExited="#onMouseVolumebuttonExited" onMousePressed="#onMouseVolumebuttonPressed" onMouseReleased="#onMouseVolumebuttonReleased" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@volume.png" />
-               </image>
-               <HBox.margin>
-                  <Insets bottom="20.0" right="5.0" />
-               </HBox.margin>
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-            </ImageView>
-            <VBox prefHeight="200.0" prefWidth="100.0">
-               <children>
-                  <Slider fx:id="volumeSlider" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseEntered="#onMouseVolumebarEntered" onMouseExited="#onMouseVolumebarExited" orientation="VERTICAL" prefHeight="75.0" prefWidth="30.0">
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor>
-                  </Slider>
-                  <Text fx:id="volumeText" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="20" textAlignment="CENTER" visible="false">
-                     <font>
-                        <Font name="Marlett" size="20.0" />
-                     </font>
-                     <VBox.margin>
-                        <Insets left="5.0" />
-                     </VBox.margin>
-                  </Text>
-               </children>
-            </VBox>
-         </children>
-      </HBox>
-      <HBox fx:id="etcArea" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="200.0" StackPane.alignment="BOTTOM_LEFT">
-         <children>
-            <ImageView fx:id="fileButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseFileButtonEntered" onMouseExited="#onMouseFileButtonExited" onMousePressed="#onMouseFileButtonPressed" onMouseReleased="#onMouseFileButtonReleased" pickOnBounds="true" preserveRatio="true">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-               <HBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="20.0" top="5.0" />
-               </HBox.margin>
-               <image>
-                  <Image url="@folder.png" />
-               </image>
-            </ImageView>
-            <ImageView fx:id="settingButton" fitHeight="45.0" fitWidth="45.0" onMouseEntered="#onMouseSettingButtonEntered" onMouseExited="#onMouseSettingButtonExited" onMousePressed="#onMouseSettingButtonPressed" onMouseReleased="#onMouseSettingButtonReleased" pickOnBounds="true" preserveRatio="true">
-               <cursor>
-                  <Cursor fx:constant="HAND" />
-               </cursor>
-               <HBox.margin>
-                  <Insets bottom="5.0" left="20.0" right="5.0" top="5.0" />
-               </HBox.margin>
-               <image>
-                  <Image url="@setting.png" />
-               </image>
-            </ImageView>
-         </children>
-      </HBox>
-   </children>
+   </HBox>
+   <HBox fx:id="etcArea" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="100.0" prefWidth="200.0" StackPane.alignment="BOTTOM_LEFT">
+      <ImageView fx:id="fileButton" fitHeight="40.0" fitWidth="40.0" onMouseEntered="#onMouseFileButtonEntered" onMouseExited="#onMouseFileButtonExited" onMousePressed="#onMouseFileButtonPressed" onMouseReleased="#onMouseFileButtonReleased" pickOnBounds="true" preserveRatio="true">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <HBox.margin>
+            <Insets bottom="5.0" left="5.0" right="20.0" top="5.0" />
+         </HBox.margin>
+         <Image url="@folder.png" />
+      </ImageView>
+      <ImageView fx:id="settingButton" fitHeight="45.0" fitWidth="45.0" onMouseEntered="#onMouseSettingButtonEntered" onMouseExited="#onMouseSettingButtonExited" onMousePressed="#onMouseSettingButtonPressed" onMouseReleased="#onMouseSettingButtonReleased" pickOnBounds="true" preserveRatio="true">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <HBox.margin>
+            <Insets bottom="5.0" left="20.0" right="5.0" top="5.0" />
+         </HBox.margin>
+         <Image url="@setting.png" />
+      </ImageView>
+   </HBox>
 </StackPane>

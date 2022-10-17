@@ -51,15 +51,18 @@ public class Crawling {
         }
     }
 
-    private static String getSecret() throws IOException {
-        FileReader reader = new FileReader("Secret.txt");
-        StringBuilder secret = new StringBuilder();
+    private static String getSecret() {
+        try (FileReader reader = new FileReader("Secret.txt")) {    // try-with-resources
+            StringBuilder secret = new StringBuilder();                     // try 블록이 끝나면 자동으로 자원 종료
 
-        int ch;
-        while ((ch = reader.read()) != -1)
-            secret.append((char)ch);
+            int ch;
+            while ((ch = reader.read()) != -1)
+                secret.append((char)ch);
 
-        return secret.toString();
+            return secret.toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String get(String apiUrl, Map<String, String> requestHeaders){
