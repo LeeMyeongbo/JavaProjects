@@ -16,42 +16,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Crawling {
-    static int line = 100;
 
-    public static void main(String[] args) throws IOException, ParseException {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("키워드 입력 : ");
-        String keyword = sc.next();
+    public String crawl(String keyword) {
+        return processJson(convert2JSON(getResponse(keyword)));
+    }
 
+    private String getResponse(String keyword) {
         String text = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
         String apiURL = "https://openapi.naver.com/v1/search/news?query=" + text + "&display=20";    // JSON 결과
 
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("X-Naver-Client-Id", "77ZHNWgvaXOrqCOeo3s5");
         requestHeaders.put("X-Naver-Client-Secret", getSecret());
-        String responseBody = get(apiURL,requestHeaders);
 
-        Set<JSONObject> jsonArticles = convert2JSON(responseBody);
-
-        for (JSONObject j : jsonArticles) {
-            String title = (String) j.get("title");
-            title = title.replaceAll("([\\[(<&](.*?)[;>)\\]])", "");
-
-            String link = (String) j.get("link");
-            String content = modifyText(crawlPassage(link));
-
-            int send = content.length() / line;
-            String[] contents = new String[send + 1];
-            for (int i = 0; i <= send; i++) {
-                int l = Integer.min(line * i + line, content.length());
-                contents[i] = content.substring(i * line, l);
-            }
-
-            printOut(title, contents);
-        }
+        return get(apiURL,requestHeaders);
     }
 
-    private static String getSecret() {
+    private String getSecret() {
         try (FileReader reader = new FileReader("Secret.txt")) {    // try-with-resources
             StringBuilder secret = new StringBuilder();                     // try 블록이 끝나면 자동으로 자원 종료
 
@@ -61,11 +42,11 @@ public class Crawling {
 
             return secret.toString();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("키 파일이 없습니다...", e);
         }
     }
 
-    private static String get(String apiUrl, Map<String, String> requestHeaders){
+    private String get(String apiUrl, Map<String, String> requestHeaders) {
         HttpURLConnection con = connect(apiUrl);
         try {
             con.setRequestMethod("GET");
@@ -79,24 +60,24 @@ public class Crawling {
                 return readBody(con.getErrorStream());
 
         } catch (IOException e) {
-            throw new RuntimeException("API 요청과 응답 실패", e);
+            throw new RuntimeException("API 요청 및 응답 실패", e);
         } finally {
             con.disconnect();
         }
     }
 
-    private static HttpURLConnection connect(String apiUrl){
+    private HttpURLConnection connect(String apiUrl) {
         try {
             URL url = new URL(apiUrl);
             return (HttpURLConnection)url.openConnection();
         } catch (MalformedURLException e) {
             throw new RuntimeException("API URL이 잘못되었습니다. : " + apiUrl, e);
         } catch (IOException e) {
-            throw new RuntimeException("연결이 실패했습니다. : " + apiUrl, e);
+            throw new RuntimeException("연결에 실패했습니다. : " + apiUrl, e);
         }
     }
 
-    private static String readBody(InputStream body){
+    private String readBody(InputStream body) {
         InputStreamReader streamReader = new InputStreamReader(body);
         try (BufferedReader lineReader = new BufferedReader(streamReader)) {
             StringBuilder responseBody = new StringBuilder();
@@ -111,8 +92,15 @@ public class Crawling {
         }
     }
 
-    private static Set<JSONObject> convert2JSON(String response) throws ParseException {
-        JSONObject jsonObject = (JSONObject) new JSONParser().parse(response);
+    private Set<JSONObject> convert2JSON(String response) {
+        JSONObject jsonObject;
+        try {
+            jsonObject = (JSONObject) new JSONParser().parse(response);
+        } catch (ParseException e) {
+            throw new RuntimeException("Json 형식으로 파싱할 수 없습니다...", e);
+        }
+        assert jsonObject != null;
+
         JSONArray arrayArticles = (JSONArray) jsonObject.get("items");
         Set<JSONObject> jsonObjects = new HashSet<>();
 
@@ -127,8 +115,30 @@ public class Crawling {
         return jsonObjects;
     }
 
-    private static Element crawlPassage(String link) throws IOException {
-        Document doc = Jsoup.connect(link).get();
+    private String processJson(Set<JSONObject> jsonArticles) {
+        StringBuilder ret = new StringBuilder();
+
+        for (JSONObject j : jsonArticles) {
+            String title = (String) j.get("title");
+            title = title.replaceAll("([\\[(<&](.*?)[;>)\\]])", "");
+            ret.append("<").append(title).append(">\n");
+
+            String link = (String) j.get("link");
+            String content = modifyText(crawlPassage(link));
+            ret.append(content).append("\n\n");
+        }
+
+        return ret.toString();
+    }
+
+    private Element crawlPassage(String link) {
+        Document doc;
+        try {
+            doc = Jsoup.connect(link).get();
+        } catch (IOException e) {
+            throw new RuntimeException("웹페이지를 읽어올 수 없습니다..", e);
+        }
+
         Element e = doc.selectFirst("#dic_area");
         if (e == null)
             e = doc.selectFirst("#articeBody");
@@ -147,7 +157,7 @@ public class Crawling {
         return e;
     }
 
-    private static String modifyText(Element e) {
+    private String modifyText(Element e) {
         // [], (), <>, &;로 싸여져 있는 부분 제거
         String content = e.text().replaceAll("([\\[(<&](.*?)[;>)\\]])", "");
 
@@ -163,12 +173,5 @@ public class Crawling {
             content = content.substring(0, idx);
 
         return content;
-    }
-
-    private static void printOut(String title, String[] contents) {
-        System.out.println("제목 : " + title);
-        for (String content : contents)
-            System.out.println(content);
-        System.out.println();
     }
 }
