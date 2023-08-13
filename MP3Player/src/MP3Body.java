@@ -34,10 +34,11 @@ class MP3Body extends JFrame implements ActionListener {
 	private final JLabel musicTitleLabel = new JLabel();
 	private final JLabel volumeLabel = new JLabel();
 	private final JTextField searchField = new JTextField();
-    private final JButton addButton = new JButton("추가");
-	private final JButton deleteButton = new JButton("삭제");
-	private final JButton sendPlaylistButton = new JButton("목록 내보내기");
-	private final JButton fetchPlayListButton = new JButton("목록 불러오기");
+    private JButton addButton;
+	private JButton deleteButton;
+	private JButton sendPlaylistButton;
+	private JButton fetchPlayListButton;
+    private JButton searchb;
 	private final JFileChooser chooser = new JFileChooser("C:\\");
     private final DefaultListModel<String> listModel = new DefaultListModel<>();
 	private final JList<String> musicList = new JList<>();
@@ -69,7 +70,7 @@ class MP3Body extends JFrame implements ActionListener {
 					player.play();
 				}
 			} else if (!optionButton[1].isEnabled()) {
-				if(n < listModel.getSize() - 1) {
+				if (n < listModel.getSize() - 1) {
 					musicList.setSelectedIndex(n + 1);
 					media = new Media(fileList.get(n + 1).toURI().toString());
 				} else {
@@ -83,7 +84,7 @@ class MP3Body extends JFrame implements ActionListener {
 				if (numOfMusic != listModel.getSize()) {
 					MusicSequence.clear();
 					numOfMusic = listModel.getSize();
-					for(int i = 0; i < numOfMusic; i++)
+					for (int i = 0; i < numOfMusic; i++)
 						MusicSequence.add(i);
 					int present = musicList.getSelectedIndex();
 					MusicSequence.remove(present);
@@ -101,6 +102,7 @@ class MP3Body extends JFrame implements ActionListener {
 	});
 
     private final JPanel panel = new JPanel() {
+
         @Serial
         private static final long serialVersionUID = 1L;
 
@@ -113,6 +115,7 @@ class MP3Body extends JFrame implements ActionListener {
     };
 
 	class Mp3Stick extends MouseAdapter implements MouseListener {
+
 		public void modifySlide(double percent) {
 			musicBarSlider.setValue((int) percent);
 			int pos = (int) player.getTotalDuration().toSeconds();
@@ -146,6 +149,7 @@ class MP3Body extends JFrame implements ActionListener {
 	}
 
 	class VolumeStick extends MouseAdapter implements MouseListener {
+
 		public void modifySlide(double percent) {
 			volumeBarSlider.setValue((int)percent);
 			if (player != null)
@@ -155,6 +159,7 @@ class MP3Body extends JFrame implements ActionListener {
 					player.setVolume(Math.pow((double) volumeBarSlider.getValue() / 100 * 2, 2) * 0.3);
 			volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
 		}
+
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			Point p = e.getPoint();
@@ -174,11 +179,12 @@ class MP3Body extends JFrame implements ActionListener {
 	}
 
 	class Listselect extends MouseAdapter implements MouseListener {
+
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			int n = musicList.getSelectedIndex();
 			deleteButton.setEnabled(true);
-			if(e.getClickCount() == 2) {
+			if (e.getClickCount() == 2) {
 				musicBarSlider.setVisible(true);
 				timer.start();
 				if (media != null)
@@ -200,31 +206,11 @@ class MP3Body extends JFrame implements ActionListener {
 		setLocation(600, 50);
 		setSize(500, 700);
         add(panel);
-        setButtons();
-        setSlider();
+        initButtonsEssentialToPlayingMusic();
+        initAdditionalButtons();
+        initSlider();
 
-        JButton searchb = new JButton("검색");
-        searchb.setLocation(370, 220);
-		searchb.setSize(70, 30);
-		searchb.addActionListener(this);
-		searchb.setActionCommand("search");
-		searchb.setToolTipText("PlayList 안에 있는 노래들 중에서 검색합니다.");
-		panel.add(searchb);
-
-		addButton.setLocation(297, 620);
-		addButton.setSize(70, 30);
-		addButton.addActionListener(this);
-		addButton.setToolTipText("노래를 PlayList에 추가합니다.");
-		panel.add(addButton);
-
-		deleteButton.setLocation(373, 620);
-		deleteButton.setSize(70, 30);
-		deleteButton.setEnabled(false);
-		deleteButton.addActionListener(this);
-		deleteButton.setToolTipText("선택한 노래를 PlayList에서 삭제합니다.");
-		panel.add(deleteButton);
-
-		musicList.setModel(listModel);
+        musicList.setModel(listModel);
 		musicList.setFont(new Font("HY엽서M", Font.PLAIN, 18));
 		LineBorder lborder = new LineBorder(Color.gray, 1);
 		TitledBorder border = new TitledBorder(lborder, "PlayLists", TitledBorder.CENTER, TitledBorder.TOP);
@@ -283,25 +269,13 @@ class MP3Body extends JFrame implements ActionListener {
 		chooser.setMultiSelectionEnabled(true);
 		chooser.setDragEnabled(true);
 
-		sendPlaylistButton.setLocation(52, 620);
-		sendPlaylistButton.setSize(117, 30);
-		sendPlaylistButton.addActionListener(this);
-		sendPlaylistButton.setToolTipText("PlayList를 파일로 저장합니다.");
-		panel.add(sendPlaylistButton);
-
-		fetchPlayListButton.setLocation(174, 620);
-		fetchPlayListButton.setSize(117, 30);
-		fetchPlayListButton.addActionListener(this);
-		fetchPlayListButton.setToolTipText("저장된 PlayList를 불러옵니다.");
-		panel.add(fetchPlayListButton);
-
-		panel.setLayout(null);
+        panel.setLayout(null);
 		setResizable(false);
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-    public void setButtons() {
+    public void initButtonsEssentialToPlayingMusic() {
         playButton = new MP3Button[3];
         optionButton = new MP3Button[3];
 
@@ -335,7 +309,62 @@ class MP3Body extends JFrame implements ActionListener {
         playButtonImage[3] = new ImageIcon(getResourceByPath(playButtonFileName[3]));
     }
 
-    public void setSlider() {
+    private void initAdditionalButtons() {
+        initAddButton();
+        initDeleteButton();
+        initSearchButton();
+        initSendPlaylistButton();
+        initFetchPlaylistButton();
+    }
+
+    private void initAddButton() {
+        addButton = new JButton("추가");
+        addButton.setLocation(297, 620);
+        addButton.setSize(70, 30);
+        addButton.addActionListener(this);
+        addButton.setToolTipText("노래를 PlayList에 추가합니다.");
+        panel.add(addButton);
+    }
+
+    private void initDeleteButton() {
+        deleteButton = new JButton("삭제");
+        deleteButton.setLocation(373, 620);
+        deleteButton.setSize(70, 30);
+        deleteButton.setEnabled(false);
+        deleteButton.addActionListener(this);
+        deleteButton.setToolTipText("선택한 노래를 PlayList에서 삭제합니다.");
+        panel.add(deleteButton);
+    }
+
+    private void initSearchButton() {
+        searchb = new JButton("검색");
+        searchb.setLocation(370, 220);
+        searchb.setSize(70, 30);
+        searchb.addActionListener(this);
+        searchb.setActionCommand("search");
+        searchb.setToolTipText("PlayList 안에 있는 노래들 중에서 검색합니다.");
+        panel.add(searchb);
+    }
+
+    private void initSendPlaylistButton() {
+        sendPlaylistButton = new JButton("목록 내보내기");
+        sendPlaylistButton.setLocation(52, 620);
+        sendPlaylistButton.setSize(117, 30);
+        sendPlaylistButton.addActionListener(this);
+        sendPlaylistButton.setToolTipText("PlayList를 파일로 저장합니다.");
+        panel.add(sendPlaylistButton);
+    }
+
+    private void initFetchPlaylistButton() {
+        fetchPlayListButton = new JButton("목록 불러오기");
+        fetchPlayListButton.setLocation(174, 620);
+        fetchPlayListButton.setSize(117, 30);
+        fetchPlayListButton.addActionListener(this);
+        fetchPlayListButton.setToolTipText("저장된 PlayList를 불러옵니다.");
+        panel.add(fetchPlayListButton);
+    }
+
+    public void initSlider() {
         musicBarSlider = new MP3Slider(JSlider.HORIZONTAL, new Point(50, 145), new Dimension(395, 30),
             "음악의 현재 재생 위치를 표시합니다.", new Mp3Stick());
         musicBarSlider.setVisible(false);
@@ -453,7 +482,7 @@ class MP3Body extends JFrame implements ActionListener {
 				int choice = chooser.showOpenDialog(null);
 				if (choice == JFileChooser.APPROVE_OPTION) {
 					try {
-						if(media != null)
+						if (media != null)
 							player.stop();
 						musicTitleLabel.setText("");
 						musicBarSlider.setVisible(false);
