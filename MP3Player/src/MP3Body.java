@@ -28,8 +28,8 @@ class MP3Body extends JFrame implements ActionListener { // JFrame 상속 및 Ac
 	private final ImageIcon[] optionButtonImage = new ImageIcon[3];
 	private MP3Button[] playButton;
 	private MP3Button[] optionButton;
-	private final JSlider musicBarSlider = new JSlider(JSlider.HORIZONTAL);
-	private final JSlider volumeBarSlider = new JSlider(JSlider.VERTICAL);
+	private MP3Slider musicBarSlider;
+	private MP3Slider volumeBarSlider;
 	private final JLabel currentTimeLabel = new JLabel();
 	private final JLabel musicLengthLabel = new JLabel();
 	private final JLabel musicTitleLabel = new JLabel();
@@ -197,11 +197,9 @@ class MP3Body extends JFrame implements ActionListener { // JFrame 상속 및 Ac
         setIconImage(icon.getImage());
 		setLocation(600, 50); // (x, y) -> 왼쪽에서 오른쪽으로 갈수록 x 증가, 위에서 아래로 갈수록 y 증가
 		setSize(500, 700); // MP3 창 크기를 500*700으로 설정
+        add(panel);
         setButtons();
-		add(panel);
-		panel.add(musicBarSlider);
-		musicBarSlider.setVisible(false);
-		panel.add(volumeBarSlider);
+        setSlider();
         // 검색 버튼
         JButton searchb = new JButton("검색");
         searchb.setLocation(370, 220);
@@ -242,27 +240,6 @@ class MP3Body extends JFrame implements ActionListener { // JFrame 상속 및 Ac
 		searchField.registerKeyboardAction(this, "search",
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
 		panel.add(searchField);
-		musicBarSlider.setLocation(50, 145);
-		musicBarSlider.setSize(395, 30);
-		musicBarSlider.setBackground(Color.white);
-		musicBarSlider.setOpaque(false);
-		musicBarSlider.addMouseListener(new Mp3Stick());
-		volumeBarSlider.setLocation(400, 34);
-		volumeBarSlider.setSize(30, 90);
-		volumeBarSlider.setBackground(Color.white);
-		volumeBarSlider.setOpaque(false);
-		volumeBarSlider.setToolTipText("볼륨 크기를 조절합니다.");
-		volumeBarSlider.addMouseListener(new VolumeStick());
-        // 볼륨 조절 슬라이더의 노브에 변화가 일어났을 때 발생되는 이벤트 처리
-        volumeBarSlider.addChangeListener(e -> {
-            if (player != null) {
-                if ((double) volumeBarSlider.getValue() / 100 >= 0.5) {
-                    player.setVolume((((double) volumeBarSlider.getValue() / 100) * 7.0 / 5.0) - 0.4);
-                } else
-                    player.setVolume(((double) volumeBarSlider.getValue() / 100 * 2 * (double) volumeBarSlider.getValue() / 100 * 2) * 0.3);
-            }
-            volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
-        });
 		panel.add(currentTimeLabel);
 		musicTitleLabel.setText("");
 		musicTitleLabel.setFont(new Font("경기천년제목 Medium", Font.PLAIN, 20));
@@ -345,6 +322,27 @@ class MP3Body extends JFrame implements ActionListener { // JFrame 상속 및 Ac
         optionButton[0].setEnabled(false);
         playButtonImage[3] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
             .getResource(playButtonFileName[3])));
+    }
+
+    public void setSlider() {
+        musicBarSlider = new MP3Slider(JSlider.HORIZONTAL, new Point(50, 145), new Dimension(395, 30),
+            "음악의 현재 재생 위치를 표시합니다.", new Mp3Stick());
+        musicBarSlider.setVisible(false);
+
+        volumeBarSlider = new MP3Slider(JSlider.VERTICAL, new Point(400, 34), new Dimension(30, 90),
+            "볼륨 크기를 조절합니다.", new VolumeStick());
+        volumeBarSlider.addChangeListener(e -> {
+            if (player != null) {
+                if ((double) volumeBarSlider.getValue() / 100 >= 0.5) {
+                    player.setVolume((((double) volumeBarSlider.getValue() / 100) * 7.0 / 5.0) - 0.4);
+                } else
+                    player.setVolume(Math.pow((double) volumeBarSlider.getValue() / 100 * 2, 2) * 0.3);
+            }
+            volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
+        });
+
+        panel.add(musicBarSlider);
+        panel.add(volumeBarSlider);
     }
 
 	public void setFileChooserFont(Component[] comp) {

@@ -6,6 +6,7 @@ public class MP3Button extends JButton {
 
     public MP3Button(ActionListener listener, ImageIcon icon, Dimension size, Point pos, String toolTipText) {
         super(icon);
+
         this.setBorderPainted(false);
         this.setContentAreaFilled(false);
         this.setFocusPainted(false);
