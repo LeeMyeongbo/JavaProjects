@@ -303,9 +303,9 @@ class MP3Body extends JFrame implements ActionListener { // JFrame 상속 및 Ac
             "PlayList에 있는 곡을 반복해서 재생합니다.",
             "PlayList에 있는 곡을 무작위로 재생합니다."
         };
-        Point[] playButtonPos = {new Point(200, 30), new Point(100, 30), new Point(292, 30)};
+        Point[] playButtonPos = {new Point(200, 30), new Point(80, 30), new Point(315, 30)};
 
-        for (int i = 0; i < 3; i++) { // 재생(i = 0), 이전곡(i = 1), 다음곡(i = 2)
+        for (int i = 0; i < 3; i++) {
             playButtonImage[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
                 .getResource(playButtonFileName[i])));
             playButton[i] = new MP3Button(this, playButtonImage[i], new Dimension(100, 100),
@@ -329,7 +329,7 @@ class MP3Body extends JFrame implements ActionListener { // JFrame 상속 및 Ac
             "음악의 현재 재생 위치를 표시합니다.", new Mp3Stick());
         musicBarSlider.setVisible(false);
 
-        volumeBarSlider = new MP3Slider(JSlider.VERTICAL, new Point(400, 34), new Dimension(30, 90),
+        volumeBarSlider = new MP3Slider(JSlider.VERTICAL, new Point(425, 34), new Dimension(30, 90),
             "볼륨 크기를 조절합니다.", new VolumeStick());
         volumeBarSlider.addChangeListener(e -> {
             if (player != null) {
