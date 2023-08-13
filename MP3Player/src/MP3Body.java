@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Objects;
 
-class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 ActionListener 구현
+class MP3Body extends JFrame implements ActionListener { // JFrame 상속 및 ActionListener 구현
 	@Serial
     private static final long serialVersionUID = 1L;
 	private final ImageIcon backgroundImage = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
@@ -190,7 +190,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 		}
 	}
 
-	public MP3_play() {
+	public MP3Body() {
 		super("MP3 플레이어");
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
             .getResource("Mp3Playericon.png")));
