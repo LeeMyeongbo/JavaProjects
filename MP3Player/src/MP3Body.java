@@ -178,7 +178,7 @@ class MP3Body extends JFrame implements ActionListener {
 		}
 	}
 
-	class Listselect extends MouseAdapter implements MouseListener {
+	class selectListListener extends MouseAdapter implements MouseListener {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
@@ -201,81 +201,29 @@ class MP3Body extends JFrame implements ActionListener {
 
 	public MP3Body() {
 		super("MP3 플레이어");
-        ImageIcon icon = new ImageIcon(getResourceByPath("Mp3Playericon.png"));
-        setIconImage(icon.getImage());
+        setIconImage(new ImageIcon(getResourceByPath("Mp3Playericon.png")).getImage());
 		setLocation(600, 50);
 		setSize(500, 700);
         add(panel);
+
         initButtonsEssentialToPlayingMusic();
         initAdditionalButtons();
         initSlider();
-
-        musicList.setModel(listModel);
-		musicList.setFont(new Font("HY엽서M", Font.PLAIN, 18));
-		LineBorder lborder = new LineBorder(Color.gray, 1);
-		TitledBorder border = new TitledBorder(lborder, "PlayLists", TitledBorder.CENTER, TitledBorder.TOP);
-		border.setTitleFont(new Font("Algerian", Font.BOLD, 30));
-		border.setTitleColor(Color.black);
-		musicList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		musicList.setForeground(Color.GRAY);
-		musicList.setSelectionForeground(Color.BLACK);
-		musicList.addMouseListener(new Listselect());
-        JScrollPane scroll = new JScrollPane(musicList);
-		scroll.setSize(395, 330);
-		scroll.setLocation(50, 280);
-		scroll.setBorder(border);
-		scroll.setOpaque(false);
-		panel.add(scroll);
-
-		searchField.setLocation(52, 220);
-		searchField.setSize(305, 30);
-		searchField.registerKeyboardAction(this, "search",
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
-		panel.add(searchField);
-
-		musicTitleLabel.setText("");
-		musicTitleLabel.setFont(new Font("경기천년제목 Medium", Font.PLAIN, 20));
-		musicTitleLabel.setForeground(Color.ORANGE);
-		musicTitleLabel.setSize(500,20);
-		musicTitleLabel.setLocation(0, 123);
-		musicTitleLabel.setHorizontalAlignment(JLabel.CENTER);
-        panel.add(musicTitleLabel);
-
-		volumeLabel.setVisible(false);
-		volumeLabel.setFont(new Font("경기천년제목 Medium", Font.PLAIN, 23));
-		volumeLabel.setForeground(Color.RED);
-		volumeLabel.setSize(100, 25);
-		volumeLabel.setLocation(375, 12);
-		volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
-		panel.add(volumeLabel);
-
-		currentTimeLabel.setSize(55, 20);
-		currentTimeLabel.setLocation(45, 180);
-		currentTimeLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
-		currentTimeLabel.setForeground(Color.BLUE);
-        panel.add(currentTimeLabel);
-
-		musicLengthLabel.setSize(55, 20);
-		musicLengthLabel.setLocation(386, 180);
-		musicLengthLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
-		musicLengthLabel.setForeground(Color.BLUE);
-        panel.add(musicLengthLabel);
-
-		chooser.setPreferredSize(new Dimension(700, 500));
-		setFileChooserFont(chooser.getComponents());
-
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(".mp3, .dat", "mp3", "dat");
-        chooser.setFileFilter(filter);
-		chooser.setMultiSelectionEnabled(true);
-		chooser.setDragEnabled(true);
+        initPlayListField();
+        initSearchField();
+        initMusicTitleLabel();
+        initVolumeLabel();
+        initCurrentTimeLabel();
+        initMusicLengthLabel();
+        initMusicFileChooser();
 
         panel.setLayout(null);
-		setResizable(false);
-		setVisible(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-    public void initButtonsEssentialToPlayingMusic() {
+    private void initButtonsEssentialToPlayingMusic() {
         playButton = new MP3Button[3];
         optionButton = new MP3Button[3];
 
@@ -363,7 +311,7 @@ class MP3Body extends JFrame implements ActionListener {
         panel.add(fetchPlayListButton);
     }
 
-    public void initSlider() {
+    private void initSlider() {
         musicBarSlider = new MP3Slider(JSlider.HORIZONTAL, new Point(50, 145), new Dimension(395, 30),
             "음악의 현재 재생 위치를 표시합니다.", new Mp3Stick());
         musicBarSlider.setVisible(false);
@@ -384,7 +332,78 @@ class MP3Body extends JFrame implements ActionListener {
         panel.add(volumeBarSlider);
     }
 
-	public void setFileChooserFont(Component[] comp) {
+    private void initPlayListField() {
+        musicList.setModel(listModel);
+        musicList.setFont(new Font("HY엽서M", Font.PLAIN, 18));
+        LineBorder lborder = new LineBorder(Color.gray, 1);
+        TitledBorder border = new TitledBorder(lborder, "PlayLists", TitledBorder.CENTER, TitledBorder.TOP);
+        border.setTitleFont(new Font("Algerian", Font.BOLD, 30));
+        border.setTitleColor(Color.black);
+        musicList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        musicList.setForeground(Color.GRAY);
+        musicList.setSelectionForeground(Color.BLACK);
+        musicList.addMouseListener(new selectListListener());
+        JScrollPane scrollPane = new JScrollPane(musicList);
+        scrollPane.setSize(395, 330);
+        scrollPane.setLocation(50, 280);
+        scrollPane.setBorder(border);
+        scrollPane.setOpaque(false);
+        panel.add(scrollPane);
+    }
+
+    private void initSearchField() {
+        searchField.setLocation(52, 220);
+        searchField.setSize(305, 30);
+        searchField.registerKeyboardAction(this, "search",
+            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
+        panel.add(searchField);
+    }
+
+    private void initMusicTitleLabel() {
+        musicTitleLabel.setText("");
+        musicTitleLabel.setFont(new Font("경기천년제목 Medium", Font.PLAIN, 20));
+        musicTitleLabel.setForeground(Color.ORANGE);
+        musicTitleLabel.setSize(500,20);
+        musicTitleLabel.setLocation(0, 123);
+        musicTitleLabel.setHorizontalAlignment(JLabel.CENTER);
+        panel.add(musicTitleLabel);
+    }
+
+    private void initVolumeLabel() {
+        volumeLabel.setVisible(false);
+        volumeLabel.setFont(new Font("경기천년제목 Medium", Font.PLAIN, 23));
+        volumeLabel.setForeground(Color.RED);
+        volumeLabel.setSize(100, 25);
+        volumeLabel.setLocation(375, 12);
+        volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
+        panel.add(volumeLabel);
+    }
+
+    private void initCurrentTimeLabel() {
+        currentTimeLabel.setSize(55, 20);
+        currentTimeLabel.setLocation(45, 180);
+        currentTimeLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
+        currentTimeLabel.setForeground(Color.BLUE);
+        panel.add(currentTimeLabel);
+    }
+
+    private void initMusicLengthLabel() {
+        musicLengthLabel.setSize(55, 20);
+        musicLengthLabel.setLocation(386, 180);
+        musicLengthLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
+        musicLengthLabel.setForeground(Color.BLUE);
+        panel.add(musicLengthLabel);
+    }
+
+    private void initMusicFileChooser() {
+        chooser.setPreferredSize(new Dimension(700, 500));
+        chooser.setFileFilter(new FileNameExtensionFilter(".mp3, .dat", "mp3", "dat"));
+        chooser.setMultiSelectionEnabled(true);
+        chooser.setDragEnabled(true);
+        setFileChooserFont(chooser.getComponents());
+    }
+
+	private void setFileChooserFont(Component[] comp) {
         for (Component component : comp) {
             if (component instanceof Container)
                 setFileChooserFont(((Container) component).getComponents());
@@ -429,10 +448,9 @@ class MP3Body extends JFrame implements ActionListener {
             for (File selectedfile : selectedfiles) {
                 try {
                     MP3File mp3 = (MP3File) AudioFileIO.read(selectedfile);
-                    Tag tag = mp3.getTag();
-                    listModel.addElement(tag.getFirst(FieldKey.TITLE));
+                    listModel.addElement(mp3.getFile().getName());
                     fileList.add(selectedfile);
-                } catch (Exception e1) {
+                } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "mp3 확장자만 지원합니다.",
                         "오류", JOptionPane.ERROR_MESSAGE);
                 }
@@ -496,8 +514,8 @@ class MP3Body extends JFrame implements ActionListener {
                 oos = new ObjectOutputStream(new FileOutputStream(path + "\\PlayList.dat"));
                 oos.writeObject(fileList);
                 oos.flush();
-            } catch (Exception e2) {
-                e2.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -522,12 +540,9 @@ class MP3Body extends JFrame implements ActionListener {
                 deleteButton.setEnabled(false);
                 ois = new ObjectInputStream(new FileInputStream(chooser.getSelectedFile()));
                 fileList = (ArrayList<File>)ois.readObject();
-                for (File file : fileList) {
-                    MP3File mp3 = (MP3File) AudioFileIO.read(file);
-                    Tag tag = mp3.getTag();
-                    listModel.addElement(tag.getFirst(FieldKey.TITLE));
-                }
-            } catch (Exception e3) {
+                for (File file : fileList)
+                    listModel.addElement(file.getName());
+            } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "유효한 파일이 아닙니다!",
                     "파일 불러오기 오류", JOptionPane.ERROR_MESSAGE);
             }
