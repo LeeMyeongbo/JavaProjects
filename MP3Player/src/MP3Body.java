@@ -38,7 +38,7 @@ class MP3Body extends JFrame implements ActionListener {
 	private JButton deleteButton;
 	private JButton sendPlaylistButton;
 	private JButton fetchPlayListButton;
-    private JButton searchb;
+    private JButton searchButton;
 	private final JFileChooser chooser = new JFileChooser("C:\\");
     private final DefaultListModel<String> listModel = new DefaultListModel<>();
 	private final JList<String> musicList = new JList<>();
@@ -337,13 +337,12 @@ class MP3Body extends JFrame implements ActionListener {
     }
 
     private void initSearchButton() {
-        searchb = new JButton("검색");
-        searchb.setLocation(370, 220);
-        searchb.setSize(70, 30);
-        searchb.addActionListener(this);
-        searchb.setActionCommand("search");
-        searchb.setToolTipText("PlayList 안에 있는 노래들 중에서 검색합니다.");
-        panel.add(searchb);
+        searchButton = new JButton("검색");
+        searchButton.setLocation(370, 220);
+        searchButton.setSize(70, 30);
+        searchButton.addActionListener(this);
+        searchButton.setToolTipText("PlayList 안에 있는 노래들 중에서 검색합니다.");
+        panel.add(searchButton);
     }
 
     private void initSendPlaylistButton() {
@@ -397,189 +396,234 @@ class MP3Body extends JFrame implements ActionListener {
         }
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getActionCommand().equals("search")) {
-			String title = searchField.getText();
-			if (title.equals("")) {
-				JOptionPane.showMessageDialog(null, "검색어를 입력해 주세요!", "찾기 오류",
-                    JOptionPane.WARNING_MESSAGE);
-				return;
-			}
-			ArrayList<Integer> results = new ArrayList<>();
-			for (int i = 0; i < listModel.getSize(); i++)
-				if (listModel.getElementAt(i).contains(title))
-					results.add(i);
-			int[] result = new int[results.size()];
-			for (int i = 0; i < result.length; i++)
-				result[i] = results.get(i);
-			if (result.length == 0) {
-				JOptionPane.showMessageDialog(null, "찾는 노래가 없습니다!", "찾기 오류",
-                    JOptionPane.WARNING_MESSAGE);
-				return;
-			}
-			musicList.setSelectedIndices(result);
-		} else {
-			JButton pressedbutton = (JButton) e.getSource();
-			if (pressedbutton.equals(addButton)) {
-				int option = chooser.showOpenDialog(new JFrame());
-				if (option == JFileChooser.APPROVE_OPTION) {
-					File[] selectedfiles = chooser.getSelectedFiles();
-                    for (File selectedfile : selectedfiles) {
-                        try {
-                            MP3File mp3 = (MP3File) AudioFileIO.read(selectedfile);
-                            Tag tag = mp3.getTag();
-                            listModel.addElement(tag.getFirst(FieldKey.TITLE));
-                            fileList.add(selectedfile);
-                        } catch (Exception e1) {
-                            JOptionPane.showMessageDialog(null, "mp3 확장자만 지원합니다.",
-                                "오류", JOptionPane.ERROR_MESSAGE);
-                        }
-                    }
-				}
-			} else if (pressedbutton.equals(deleteButton)) {
-				int[] selected = musicList.getSelectedIndices();
-				for (int i = 0; i < selected.length; i++) {
-					selected[i] -= i;
-					File deletingfile = fileList.get(selected[i]);
-					if (media != null)
-						if (media.getSource().equals(deletingfile.toURI().toString())) {
-							timer.stop();
-							player.stop();
-							player = null;
-							media = null;
-							deleteButton.setEnabled(false);
-							playButton[0].setIcon(playButtonImage[0]);
-							musicTitleLabel.setText("");
-							musicBarSlider.setVisible(false);
-							currentTimeLabel.setText("");
-							musicLengthLabel.setText("");
-						} else {
-							if (media.getSource().equals(fileList.get(i).toURI().toString()))
-								musicList.setSelectedIndex(i);
-						}
-					else
-						deleteButton.setEnabled(false);
-					listModel.remove(selected[i]);
-					fileList.remove(deletingfile);
-				}
-			} else if (pressedbutton.equals(sendPlaylistButton)) {
-				ObjectOutputStream oos;
-				int choice = chooser.showSaveDialog(null);
-				if (choice == JFileChooser.APPROVE_OPTION) {
-					try {
-						File path = chooser.getCurrentDirectory().getAbsoluteFile();
-						oos = new ObjectOutputStream(new FileOutputStream(path + "\\PlayList.dat"));
-						oos.writeObject(fileList);
-						oos.flush();
-					} catch (Exception e2) {
-						e2.printStackTrace();
-					}
-				}
-			} else if (pressedbutton.equals(fetchPlayListButton)) {
-				ObjectInputStream ois;
-				int choice = chooser.showOpenDialog(null);
-				if (choice == JFileChooser.APPROVE_OPTION) {
-					try {
-						if (media != null)
-							player.stop();
-						musicTitleLabel.setText("");
-						musicBarSlider.setVisible(false);
-						currentTimeLabel.setText("");
-						musicLengthLabel.setText("");
-						timer.stop();
-						listModel.clear();
-						player = null;
-						media = null;
-						playButton[0].setIcon(playButtonImage[0]);
-						deleteButton.setEnabled(false);
-						ois = new ObjectInputStream(new FileInputStream(chooser.getSelectedFile()));
-						fileList = (ArrayList<File>)ois.readObject();
-                        for (File file : fileList) {
-                            MP3File mp3 = (MP3File) AudioFileIO.read(file);
-                            Tag tag = mp3.getTag();
-                            listModel.addElement(tag.getFirst(FieldKey.TITLE));
-                        }
-					} catch (Exception e3) {
-						JOptionPane.showMessageDialog(null, "유효한 파일이 아닙니다!",
-                            "파일 불러오기 오류", JOptionPane.ERROR_MESSAGE);
-					}
-				}
-			} else if (pressedbutton.getIcon().equals(playButtonImage[0])) {
-				deleteButton.setEnabled(true);
-				if (musicList.getSelectedIndices().length > 0) {
-					int num = musicList.getSelectedIndices()[0];
-					musicList.setSelectedIndex(num);
-					if (media != null) {
-						if (!media.getSource().equals(fileList.get(num).toURI().toString())) {
-							media = new Media(fileList.get(num).toURI().toString());
-							player = new MediaPlayer(media);
-						}
-					} else {
-						media = new Media(fileList.get(num).toURI().toString());
-						player = new MediaPlayer(media);
-					}
-				} else {
-					if (listModel.getSize() > 0) {
-						musicList.setSelectedIndex(0);
-						media = new Media(fileList.get(0).toURI().toString());
-						player = new MediaPlayer(media);
-					} else {
-						deleteButton.setEnabled(false);
-						JOptionPane.showMessageDialog(null, "노래를 추가하세요!", "재생 오류",
-                            JOptionPane.ERROR_MESSAGE);
-						return;
-					}
-				}
-				timer.start();
-				musicBarSlider.setVisible(true);
-				player.play();
-				musicTitleLabel.setText(musicList.getSelectedValue());
-				pressedbutton.setToolTipText("노래를 잠시 멈춥니다.");
-				pressedbutton.setIcon(playButtonImage[3]);
-			} else if (pressedbutton.getIcon().equals(playButtonImage[3])) {
-				player.pause();
-				pressedbutton.setToolTipText("PlayList에서 선택한 노래를 재생합니다.");
-				pressedbutton.setIcon(playButtonImage[0]);
-			} else if (pressedbutton.getIcon().equals(playButtonImage[1]) ||
-					pressedbutton.getIcon().equals(playButtonImage[2])) {
-				if (media != null) {
-					int n = musicList.getSelectedIndex();
-					if(pressedbutton.getIcon().equals(playButtonImage[1])) {
-						if (n > 0) {
-							player.stop();
-							musicList.setSelectedIndex(n - 1);
-							media = new Media(fileList.get(n - 1).toURI().toString());
-							player = new MediaPlayer(media);
-							player.play();
-							timer.start();
-						}
-					} else {
-						if (n < musicList.getLastVisibleIndex()) {
-							player.stop();
-							musicList.setSelectedIndex(n + 1);
-							media = new Media(fileList.get(n + 1).toURI().toString());
-							player = new MediaPlayer(media);
-							player.play();
-							timer.start();
-						}
-					}
-					musicTitleLabel.setText(musicList.getSelectedValue());
-				}
-			} else {
-				pressedbutton.setEnabled(false);
-				if (pressedbutton.getIcon().equals(optionButtonImage[0])) {
-					optionButton[1].setEnabled(true);
-					optionButton[2].setEnabled(true);
-				} else if (pressedbutton.getIcon().equals(optionButtonImage[1])) {
-					optionButton[0].setEnabled(true);
-					optionButton[2].setEnabled(true);
-				} else {
-					optionButton[0].setEnabled(true);
-					optionButton[1].setEnabled(true);
-				}
-			}
-		}
+        JButton pressedbutton = (JButton) e.getSource();
+        if (pressedbutton.equals(addButton))
+            addMusicToPlaylist();
+        else if (pressedbutton.equals(deleteButton))
+            deleteMusicFromPlaylist();
+        else if (pressedbutton.equals(searchButton))
+            searchMusic();
+        else if (pressedbutton.equals(sendPlaylistButton))
+            savePlaylistAsFile();
+        else if (pressedbutton.equals(fetchPlayListButton))
+            fetchPlaylistFromFile();
+        else if (pressedbutton.getIcon().equals(playButtonImage[0])) {
+            playMusic(pressedbutton);
+        } else if (pressedbutton.getIcon().equals(playButtonImage[3])) {
+            pauseMusic(pressedbutton);
+        } else if (pressedbutton.getIcon().equals(playButtonImage[1])) {
+            playPreviousMusic();
+        } else if (pressedbutton.getIcon().equals(playButtonImage[2])) {
+            playNextMusic();
+        } else {
+            setPlayMode(pressedbutton);
+        }
 	}
+
+    private void addMusicToPlaylist() {
+        int option = chooser.showOpenDialog(new JFrame());
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File[] selectedfiles = chooser.getSelectedFiles();
+            for (File selectedfile : selectedfiles) {
+                try {
+                    MP3File mp3 = (MP3File) AudioFileIO.read(selectedfile);
+                    Tag tag = mp3.getTag();
+                    listModel.addElement(tag.getFirst(FieldKey.TITLE));
+                    fileList.add(selectedfile);
+                } catch (Exception e1) {
+                    JOptionPane.showMessageDialog(null, "mp3 확장자만 지원합니다.",
+                        "오류", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
+    private void deleteMusicFromPlaylist() {
+        int[] selected = musicList.getSelectedIndices();
+        for (int i = 0; i < selected.length; i++) {
+            selected[i] -= i;
+            File deletingfile = fileList.get(selected[i]);
+            if (media != null)
+                if (media.getSource().equals(deletingfile.toURI().toString())) {
+                    timer.stop();
+                    player.stop();
+                    player = null;
+                    media = null;
+                    deleteButton.setEnabled(false);
+                    playButton[0].setIcon(playButtonImage[0]);
+                    musicTitleLabel.setText("");
+                    musicBarSlider.setVisible(false);
+                    currentTimeLabel.setText("");
+                    musicLengthLabel.setText("");
+                } else {
+                    if (media.getSource().equals(fileList.get(i).toURI().toString()))
+                        musicList.setSelectedIndex(i);
+                }
+            else
+                deleteButton.setEnabled(false);
+            listModel.remove(selected[i]);
+            fileList.remove(deletingfile);
+        }
+    }
+
+    private void searchMusic() {
+        String title = searchField.getText();
+        if (title.equals("")) {
+            JOptionPane.showMessageDialog(null, "검색어를 입력해 주세요!", "찾기 오류",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        ArrayList<Integer> results = new ArrayList<>();
+        for (int i = 0; i < listModel.getSize(); i++)
+            if (listModel.getElementAt(i).contains(title))
+                results.add(i);
+        if (results.size() == 0) {
+            JOptionPane.showMessageDialog(null, "찾는 노래가 없습니다!", "찾기 오류",
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        musicList.setSelectedIndices(results.stream().mapToInt(i -> i).toArray());
+    }
+
+    private void savePlaylistAsFile() {
+        ObjectOutputStream oos;
+        int choice = chooser.showSaveDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            try {
+                File path = chooser.getCurrentDirectory().getAbsoluteFile();
+                oos = new ObjectOutputStream(new FileOutputStream(path + "\\PlayList.dat"));
+                oos.writeObject(fileList);
+                oos.flush();
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fetchPlaylistFromFile() {
+        ObjectInputStream ois;
+        int choice = chooser.showOpenDialog(null);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            try {
+                if (media != null)
+                    player.stop();
+                musicTitleLabel.setText("");
+                musicBarSlider.setVisible(false);
+                currentTimeLabel.setText("");
+                musicLengthLabel.setText("");
+                timer.stop();
+                listModel.clear();
+                player = null;
+                media = null;
+                playButton[0].setIcon(playButtonImage[0]);
+                deleteButton.setEnabled(false);
+                ois = new ObjectInputStream(new FileInputStream(chooser.getSelectedFile()));
+                fileList = (ArrayList<File>)ois.readObject();
+                for (File file : fileList) {
+                    MP3File mp3 = (MP3File) AudioFileIO.read(file);
+                    Tag tag = mp3.getTag();
+                    listModel.addElement(tag.getFirst(FieldKey.TITLE));
+                }
+            } catch (Exception e3) {
+                JOptionPane.showMessageDialog(null, "유효한 파일이 아닙니다!",
+                    "파일 불러오기 오류", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void playMusic(JButton pressedbutton) {
+        deleteButton.setEnabled(true);
+        if (musicList.getSelectedIndices().length > 0)
+            playWhenSelectMusic();
+        else
+            if (playWhenNotSelectMusic()) return;
+
+        timer.start();
+        player.play();
+        musicBarSlider.setVisible(true);
+        musicTitleLabel.setText(musicList.getSelectedValue());
+        pressedbutton.setToolTipText("노래를 잠시 멈춥니다.");
+        pressedbutton.setIcon(playButtonImage[3]);
+    }
+
+    private void playWhenSelectMusic() {
+        int num = musicList.getSelectedIndices()[0];
+        musicList.setSelectedIndex(num);
+        if (media != null) {
+            if (!media.getSource().equals(fileList.get(num).toURI().toString())) {
+                media = new Media(fileList.get(num).toURI().toString());
+                player = new MediaPlayer(media);
+            }
+        } else {
+            media = new Media(fileList.get(num).toURI().toString());
+            player = new MediaPlayer(media);
+        }
+    }
+
+    private boolean playWhenNotSelectMusic() {
+        if (listModel.getSize() > 0) {
+            musicList.setSelectedIndex(0);
+            media = new Media(fileList.get(0).toURI().toString());
+            player = new MediaPlayer(media);
+        } else {
+            deleteButton.setEnabled(false);
+            JOptionPane.showMessageDialog(null, "노래를 추가하세요!", "재생 오류",
+                JOptionPane.ERROR_MESSAGE);
+            return true;
+        }
+        return false;
+    }
+
+    private void pauseMusic(JButton pressedbutton) {
+        player.pause();
+        pressedbutton.setToolTipText("PlayList에서 선택한 노래를 재생합니다.");
+        pressedbutton.setIcon(playButtonImage[0]);
+    }
+
+    private void playPreviousMusic() {
+        if (media != null) {
+            int n = musicList.getSelectedIndex();
+            if (n > 0) {
+                player.stop();
+                musicList.setSelectedIndex(n - 1);
+                media = new Media(fileList.get(n - 1).toURI().toString());
+                player = new MediaPlayer(media);
+                player.play();
+                timer.start();
+            }
+            musicTitleLabel.setText(musicList.getSelectedValue());
+        }
+    }
+
+    private void playNextMusic() {
+        if (media != null) {
+            int n = musicList.getSelectedIndex();
+            if (n < musicList.getLastVisibleIndex()) {
+                player.stop();
+                musicList.setSelectedIndex(n + 1);
+                media = new Media(fileList.get(n + 1).toURI().toString());
+                player = new MediaPlayer(media);
+                player.play();
+                timer.start();
+            }
+            musicTitleLabel.setText(musicList.getSelectedValue());
+        }
+    }
+
+    private void setPlayMode(JButton pressedbutton) {
+        pressedbutton.setEnabled(false);
+        if (pressedbutton.getIcon().equals(optionButtonImage[0])) {
+            optionButton[1].setEnabled(true);
+            optionButton[2].setEnabled(true);
+        } else if (pressedbutton.getIcon().equals(optionButtonImage[1])) {
+            optionButton[0].setEnabled(true);
+            optionButton[2].setEnabled(true);
+        } else {
+            optionButton[0].setEnabled(true);
+            optionButton[1].setEnabled(true);
+        }
+    }
 }
