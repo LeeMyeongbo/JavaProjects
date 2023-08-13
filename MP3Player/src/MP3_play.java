@@ -23,10 +23,10 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
     private static final long serialVersionUID = 1L;
 	private final ImageIcon image = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("background.png"))); // 배경
     private ArrayList<File> filelists = new ArrayList<>(); // mp3 파일 저장용 ArrayList
-    private final ImageIcon[] buttonimgs = new ImageIcon[4]; // 재생, 일시정지, 이전곡, 다음곡 버튼 이미지
-	private final ImageIcon[] optionimgs = new ImageIcon[3]; // 전체 한 번 재생, 전체 반복 재생, 셔플 재생 버튼 이미지
-	private final JButton[] jb = new JButton[3]; // 재생, 일시정지, 이전곡, 다음곡 버튼
-	private final JButton[] options = new JButton[3]; // 전체 한 번 재생, 전체 반복 재생, 셔플 재생 버튼
+    private final ImageIcon[] playButtonImage = new ImageIcon[4]; // 재생, 일시정지, 이전곡, 다음곡 버튼 이미지
+	private final ImageIcon[] optionButtonImage = new ImageIcon[3]; // 전체 한 번 재생, 전체 반복 재생, 셔플 재생 버튼 이미지
+	private MP3Button[] playButton;
+	private MP3Button[] optionButton;
 	private final JSlider js1 = new JSlider(JSlider.HORIZONTAL); // 노래 재생 상태를 나타내는 js1 슬라이더
 	private final JSlider js2 = new JSlider(JSlider.VERTICAL); // 볼륨 크기를 나타내는 js2 슬라이더
 	private final JLabel presentimes = new JLabel(); // 현재 재생 중인 시간 표시
@@ -53,10 +53,10 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 		String time2 = String.format("%02d:%02d%n", (int) d2.toMinutes(), (int) d2.toSeconds() % 60); 
 		presentimes.setText(time1);
 		lastimes.setText(time2);
-		js1.setValue((int) (100 * (d1.toSeconds() / d2.toSeconds()))); 
+		js1.setValue((int) (100 * (d1.toSeconds() / d2.toSeconds())));
 		player.setOnEndOfMedia(() -> {
 			int n = jl.getSelectedIndex();
-			if(!options[0].isEnabled()) { // 전체 한 번 재생일 경우
+			if(!optionButton[0].isEnabled()) { // 전체 한 번 재생일 경우
 				if(n < listmodel.getSize() - 1) {
 					jl.setSelectedIndex(n + 1);
 					song.setText(jl.getSelectedValue());
@@ -64,7 +64,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 					player = new MediaPlayer(m);
 					player.play();
 				}
-			} else if(!options[1].isEnabled()) { // 전체 반복 재생일 경우
+			} else if(!optionButton[1].isEnabled()) { // 전체 반복 재생일 경우
 				if(n < listmodel.getSize() - 1) {
 					jl.setSelectedIndex(n + 1);
 					m = new Media(filelists.get(n + 1).toURI().toString());
@@ -95,13 +95,25 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 			}
 		});
 	});
+
+    private final JPanel jp = new JPanel() { // 패널에다 위의 배경을 그림
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void paint(Graphics g) {
+            g.drawImage(image.getImage(), 0, 0, getWidth(), getHeight(), null);
+            super.paintComponents(g);
+        }
+    };
+
 	// mp3 노래 재생 슬라이더 설정
 	class Mp3Stick extends MouseAdapter implements MouseListener {
 		public void modifySlide(double percent) {
 			js1.setValue((int) percent);
 			int pos = (int) player.getTotalDuration().toSeconds();
 			player.seek(Duration.seconds(pos * (js1.getValue() / 100.0)));
-			if (jb[0].getIcon().equals(buttonimgs[3])) {
+			if (playButton[0].getIcon().equals(playButtonImage[3])) {
 				player.play();
 				t.start();
 			} else
@@ -171,62 +183,20 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 				player = new MediaPlayer(m);
 				player.play();
 				player.setVolume(0.3);
-				jb[0].setIcon(buttonimgs[3]);
+				playButton[0].setIcon(playButtonImage[3]);
 				song.setText(jl.getSelectedValue());
 			}
 		}
 	}
-	// 클래스 생성자(MP3 Player 기본 세팅)
+
 	public MP3_play() {
-		super("MP3 플레이어"); // 상위 클래스인 JFrame 클래스의 생성자 호출
+		super("MP3 플레이어");
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("Mp3Playericon.png")));
         setIconImage(icon.getImage());
-        String[] but = {"재생.png", "이전곡.png", "다음곡.png", "일시정지.png"};
-        JPanel jp = new JPanel() { // 패널에다 위의 배경을 그림
-            @Serial
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void paint(Graphics g) {
-                g.drawImage(image.getImage(), 0, 0, getWidth(), getHeight(), null);
-                super.paintComponents(g);
-            }
-        };
-        for (int i = 0; i < 3; i++) { // 재생(i = 0), 이전곡(i = 1), 다음곡(i = 2)
-			buttonimgs[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(but[i])));
-			jb[i] = new JButton(buttonimgs[i]); // 버튼 이미지를 가지는 버튼 생성
-			jb[i].setBorderPainted(false); // 버튼 경계선 제거
-			jb[i].setContentAreaFilled(false); // 버튼 내부 색 제거
-			jb[i].setFocusPainted(false); // 이미지 경계선 제거
-			jb[i].setSize(100, 100); // 버튼 크기를 100*100 으로 설정
-			jb[i].addActionListener(this);
-			jp.add(jb[i]);
-            // 3가지 재생 옵션 파일 이름
-            String[] opt = {"전체 한 번씩.png", "전체반복.png", "셔플.png"};
-            optionimgs[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(opt[i])));
-			options[i] = new JButton(optionimgs[i]);
-			options[i].setBorderPainted(false);
-			options[i].setContentAreaFilled(false);
-			options[i].setFocusPainted(false);
-			options[i].setSize(45, 40);
-			options[i].setLocation(140 + i * 84, 170);
-			options[i].addActionListener(this);
-			jp.add(options[i]);
-		}
-		buttonimgs[3] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource(but[3])));
 		setLocation(600, 50); // (x, y) -> 왼쪽에서 오른쪽으로 갈수록 x 증가, 위에서 아래로 갈수록 y 증가
 		setSize(500, 700); // MP3 창 크기를 500*700으로 설정
+        setButtons();
 		add(jp);
-		jb[0].setLocation(200, 30);
-		jb[0].setToolTipText("PlayList에서 선택한 노래를 재생합니다.");
-		jb[1].setLocation(100, 30);
-		jb[1].setToolTipText("PlayList에서 선택한 노래의 이전곡을 재생합니다.");
-		jb[2].setLocation(292, 30);
-		jb[2].setToolTipText("PlayList에서 선택한 노래의 다음곡을 재생합니다.");
-		options[0].setEnabled(false);
-		options[0].setToolTipText("PlayList에 있는 곡을 한 번씩만 재생합니다.");
-		options[1].setToolTipText("PlayList에 있는 곡을 반복해서 재생합니다.");
-		options[2].setToolTipText("PlayList에 있는 곡을 무작위로 재생합니다.");
 		jp.add(js1);
 		js1.setVisible(false);
 		jp.add(js2);
@@ -336,7 +306,42 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 창 닫으면 프로세스도 같이 종료
 	}
-	// JFileChooser 다이얼로그 창 설정
+
+    public void setButtons() {
+        playButton = new MP3Button[3];
+        optionButton = new MP3Button[3];
+
+        String[] playButtonFileName = {"재생.png", "이전곡.png", "다음곡.png", "일시정지.png"};
+        String[] optionButtonFileName = {"전체 한 번씩.png", "전체반복.png", "셔플.png"};
+        String[] playButtonToolTip = {
+            "PlayList에서 선택한 노래를 재생합니다.",
+            "PlayList에서 선택한 노래의 이전곡을 재생합니다.",
+            "PlayList에서 선택한 노래의 다음곡을 재생합니다."
+        };
+        String[] optionButtonToolTip = {
+            "PlayList에 있는 곡을 한 번씩만 재생합니다.",
+            "PlayList에 있는 곡을 반복해서 재생합니다.",
+            "PlayList에 있는 곡을 무작위로 재생합니다."
+        };
+        Point[] playButtonPos = {new Point(200, 30), new Point(100, 20), new Point(292, 30)};
+
+        for (int i = 0; i < 3; i++) { // 재생(i = 0), 이전곡(i = 1), 다음곡(i = 2)
+            playButtonImage[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
+                .getResource(playButtonFileName[i])));
+            playButton[i] = new MP3Button(this, playButtonImage[i], new Dimension(100, 100),
+                playButtonPos[i], playButtonToolTip[i]);
+            jp.add(playButton[i]);
+
+            optionButtonImage[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
+                .getResource(optionButtonFileName[i])));
+            optionButton[i] = new MP3Button(this, optionButtonImage[i], new Dimension(45, 40),
+                new Point(40 + i * 84, 170), optionButtonToolTip[i]);
+            jp.add(optionButton[i]);
+        }
+        playButtonImage[3] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
+            .getResource(playButtonFileName[3])));
+    }
+
 	public void setFileChooserFont(Component[] comp) {
         for (Component component : comp) {
             if (component instanceof Container)
@@ -399,7 +404,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 							player = null;
 							m = null;
 							deleteb.setEnabled(false);
-							jb[0].setIcon(buttonimgs[0]); // 재생 버튼으로 바꿈
+							playButton[0].setIcon(playButtonImage[0]); // 재생 버튼으로 바꿈
 							song.setText("");
 							js1.setVisible(false);
 							presentimes.setText("");
@@ -441,7 +446,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 						listmodel.clear(); // 현재 PlayList 초기화
 						player = null;
 						m = null;
-						jb[0].setIcon(buttonimgs[0]); // 재생 버튼으로 바꿈
+						playButton[0].setIcon(playButtonImage[0]); // 재생 버튼으로 바꿈
 						deleteb.setEnabled(false);
 						ois = new ObjectInputStream(new FileInputStream(chooser.getSelectedFile())); 
 						filelists = (ArrayList<File>)ois.readObject(); // 사용자가 선택한 파일에 저장된 객체 정보를 읽어서 filelists에 저장
@@ -454,7 +459,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 						JOptionPane.showMessageDialog(null, "유효한 파일이 아닙니다!", "파일 불러오기 오류", JOptionPane.ERROR_MESSAGE);
 					}
 				}
-			} else if (pressedbutton.getIcon().equals(buttonimgs[0])) { // 재생 버튼 클릭했을 때
+			} else if (pressedbutton.getIcon().equals(playButtonImage[0])) { // 재생 버튼 클릭했을 때
 				deleteb.setEnabled(true);
 				if(jl.getSelectedIndices().length > 0) { // 재생 목록에 항목을 하나 이상 선택했을 경우
 					int num = jl.getSelectedIndices()[0]; 
@@ -484,16 +489,16 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 				player.play();
 				song.setText(jl.getSelectedValue());
 				pressedbutton.setToolTipText("노래를 잠시 멈춥니다.");
-				pressedbutton.setIcon(buttonimgs[3]); // 버튼의 이미지를 "일시정지.png"로 바꿈
-			} else if (pressedbutton.getIcon().equals(buttonimgs[3])) { // 일시 정지 버튼 클릭했을 때
+				pressedbutton.setIcon(playButtonImage[3]); // 버튼의 이미지를 "일시정지.png"로 바꿈
+			} else if (pressedbutton.getIcon().equals(playButtonImage[3])) { // 일시 정지 버튼 클릭했을 때
 				player.pause(); // 노래 일시 정지
 				pressedbutton.setToolTipText("PlayList에서 선택한 노래를 재생합니다.");
-				pressedbutton.setIcon(buttonimgs[0]); // 버튼 이미지를 "재생.png"로 바꿈
-			} else if (pressedbutton.getIcon().equals(buttonimgs[1]) || 
-					pressedbutton.getIcon().equals(buttonimgs[2])) { // 이전곡 또는 다음곡 버튼 클릭했을 때
+				pressedbutton.setIcon(playButtonImage[0]); // 버튼 이미지를 "재생.png"로 바꿈
+			} else if (pressedbutton.getIcon().equals(playButtonImage[1]) ||
+					pressedbutton.getIcon().equals(playButtonImage[2])) { // 이전곡 또는 다음곡 버튼 클릭했을 때
 				if (m != null) {
 					int n = jl.getSelectedIndex();
-					if(pressedbutton.getIcon().equals(buttonimgs[1])) { // 이전곡 클릭 시
+					if(pressedbutton.getIcon().equals(playButtonImage[1])) { // 이전곡 클릭 시
 						if (n > 0) {
 							player.stop();
 							jl.setSelectedIndex(n - 1);
@@ -516,15 +521,15 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
 				}
 			} else { // 전체 한 번 재생 버튼, 전체 반복 재생 버튼 또는 셔플 재생 버튼 클릭 시
 				pressedbutton.setEnabled(false); // 클릭된 버튼 비활성화
-				if(pressedbutton.getIcon().equals(optionimgs[0])) { // 전체 한 번 재생 버튼 클릭했을 경우
-					options[1].setEnabled(true);
-					options[2].setEnabled(true);
-				} else if(pressedbutton.getIcon().equals(optionimgs[1])) { // 전체 반복 재생 버튼 클릭했을 경우
-					options[0].setEnabled(true);
-					options[2].setEnabled(true);
+				if(pressedbutton.getIcon().equals(optionButtonImage[0])) { // 전체 한 번 재생 버튼 클릭했을 경우
+					optionButton[1].setEnabled(true);
+					optionButton[2].setEnabled(true);
+				} else if(pressedbutton.getIcon().equals(optionButtonImage[1])) { // 전체 반복 재생 버튼 클릭했을 경우
+					optionButton[0].setEnabled(true);
+					optionButton[2].setEnabled(true);
 				} else { // 셔플 재생 클릭했을 경우
-					options[0].setEnabled(true);
-					options[1].setEnabled(true);
+					optionButton[0].setEnabled(true);
+					optionButton[1].setEnabled(true);
 				}
 			}
 		}
