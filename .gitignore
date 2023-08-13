@@ -5,4 +5,4 @@ excluded/
 target/
 
 *.iml
-Secret.txt
+*.txt
