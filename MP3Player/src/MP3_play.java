@@ -326,7 +326,7 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
             "PlayList에 있는 곡을 반복해서 재생합니다.",
             "PlayList에 있는 곡을 무작위로 재생합니다."
         };
-        Point[] playButtonPos = {new Point(200, 30), new Point(100, 20), new Point(292, 30)};
+        Point[] playButtonPos = {new Point(200, 30), new Point(100, 30), new Point(292, 30)};
 
         for (int i = 0; i < 3; i++) { // 재생(i = 0), 이전곡(i = 1), 다음곡(i = 2)
             playButtonImage[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
@@ -338,9 +338,11 @@ class MP3_play extends JFrame implements ActionListener { // JFrame 상속 및 A
             optionButtonImage[i] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
                 .getResource(optionButtonFileName[i])));
             optionButton[i] = new MP3Button(this, optionButtonImage[i], new Dimension(45, 40),
-                new Point(40 + i * 84, 170), optionButtonToolTip[i]);
+                new Point(140 + i * 84, 170), optionButtonToolTip[i]);
             panel.add(optionButton[i]);
         }
+
+        optionButton[0].setEnabled(false);
         playButtonImage[3] = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader()
             .getResource(playButtonFileName[3])));
     }
