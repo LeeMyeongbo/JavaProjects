@@ -3,8 +3,6 @@ import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3File;
-import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.Tag;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
