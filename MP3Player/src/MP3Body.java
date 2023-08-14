@@ -114,17 +114,6 @@ class MP3Body extends JFrame implements ActionListener {
 
 	class Mp3Stick extends MouseAdapter implements MouseListener {
 
-		public void modifySlide(double percent) {
-			musicBarSlider.setValue((int) percent);
-			int pos = (int) player.getTotalDuration().toSeconds();
-			player.seek(Duration.seconds(pos * (musicBarSlider.getValue() / 100.0)));
-			if (playButton[0].getIcon().equals(playButtonImage[3])) {
-				player.play();
-				timer.start();
-			} else
-				player.pause();
-		}
-
 		@Override
 		public void mousePressed(MouseEvent e) {
 			timer.stop();
@@ -144,19 +133,20 @@ class MP3Body extends JFrame implements ActionListener {
 			double percent = p.getX() / (double) musicBarSlider.getWidth() * 100;
 			modifySlide(percent);
 		}
+
+        private void modifySlide(double percent) {
+            musicBarSlider.setValue((int) percent);
+            int pos = (int) player.getTotalDuration().toSeconds();
+            player.seek(Duration.seconds(pos * (musicBarSlider.getValue() / 100.0)));
+            if (playButton[0].getIcon().equals(playButtonImage[3])) {
+                player.play();
+                timer.start();
+            } else
+                player.pause();
+        }
 	}
 
 	class VolumeStick extends MouseAdapter implements MouseListener {
-
-		public void modifySlide(double percent) {
-			volumeBarSlider.setValue((int)percent);
-			if (player != null)
-				if ((double) volumeBarSlider.getValue() / 100 >= 0.5) {
-					player.setVolume((((double) volumeBarSlider.getValue() / 100) * 7.0 / 5.0) - 0.4);
-				} else
-					player.setVolume(Math.pow((double) volumeBarSlider.getValue() / 100 * 2, 2) * 0.3);
-			volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
-		}
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
@@ -174,6 +164,16 @@ class MP3Body extends JFrame implements ActionListener {
 		public void mouseExited(MouseEvent e) {
 			volumeLabel.setVisible(false);
 		}
+
+        private void modifySlide(double percent) {
+            volumeBarSlider.setValue((int)percent);
+            if (player != null)
+                if ((double) volumeBarSlider.getValue() / 100 >= 0.5)
+                    player.setVolume((((double) volumeBarSlider.getValue() / 100) * 7.0 / 5.0) - 0.4);
+                else
+                    player.setVolume(Math.pow((double) volumeBarSlider.getValue() / 100 * 2, 2) * 0.3);
+            volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
+        }
 	}
 
 	class selectListListener extends MouseAdapter implements MouseListener {
@@ -333,10 +333,10 @@ class MP3Body extends JFrame implements ActionListener {
     private void initPlayListField() {
         musicList.setModel(listModel);
         musicList.setFont(new Font("HY엽서M", Font.PLAIN, 18));
-        LineBorder lborder = new LineBorder(Color.gray, 1);
-        TitledBorder border = new TitledBorder(lborder, "PlayLists", TitledBorder.CENTER, TitledBorder.TOP);
-        border.setTitleFont(new Font("Algerian", Font.BOLD, 30));
-        border.setTitleColor(Color.black);
+        LineBorder lineBorder = new LineBorder(Color.gray, 1);
+        TitledBorder titleBorder = new TitledBorder(lineBorder, "PlayLists", TitledBorder.CENTER, TitledBorder.TOP);
+        titleBorder.setTitleFont(new Font("Algerian", Font.BOLD, 30));
+        titleBorder.setTitleColor(Color.black);
         musicList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         musicList.setForeground(Color.GRAY);
         musicList.setSelectionForeground(Color.BLACK);
@@ -344,7 +344,7 @@ class MP3Body extends JFrame implements ActionListener {
         JScrollPane scrollPane = new JScrollPane(musicList);
         scrollPane.setSize(395, 330);
         scrollPane.setLocation(50, 280);
-        scrollPane.setBorder(border);
+        scrollPane.setBorder(titleBorder);
         scrollPane.setOpaque(false);
         panel.add(scrollPane);
     }
