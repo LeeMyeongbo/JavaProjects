@@ -5,6 +5,7 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3File;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -12,31 +13,22 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Objects;
+import java.util.*;
 
 class MP3Body extends JFrame implements ActionListener {
 	@Serial
     private static final long serialVersionUID = 1L;
     private ArrayList<File> fileList = new ArrayList<>();
-    private final ImageIcon[] playButtonImage = new ImageIcon[4];
-	private final ImageIcon[] optionButtonImage = new ImageIcon[3];
-	private MP3Button[] playButton;
-	private MP3Button[] optionButton;
-	private MP3Slider musicBarSlider;
-	private MP3Slider volumeBarSlider;
+    private MP3Button playButton, pauseButton, prevButton, nextButton;
+    private MP3Button onceModeButton, repeatModeButton, shuffleModeButton;
+    private JButton addButton, deleteButton, savePlaylistButton, fetchPlayListButton, searchButton;
+    private MP3Slider musicBarSlider;
+    private MP3Slider volumeBarSlider;
 	private final JLabel currentTimeLabel = new JLabel();
 	private final JLabel musicLengthLabel = new JLabel();
 	private final JLabel musicTitleLabel = new JLabel();
 	private final JLabel volumeLabel = new JLabel();
 	private final JTextField searchField = new JTextField();
-    private JButton addButton;
-	private JButton deleteButton;
-	private JButton sendPlaylistButton;
-	private JButton fetchPlayListButton;
-    private JButton searchButton;
 	private final JFileChooser chooser = new JFileChooser("C:\\");
     private final DefaultListModel<String> listModel = new DefaultListModel<>();
 	private final JList<String> musicList = new JList<>();
@@ -44,6 +36,14 @@ class MP3Body extends JFrame implements ActionListener {
 	private MediaPlayer player = null;
 	private int numOfMusic;
 	private final LinkedList<Integer> MusicSequence = new LinkedList<>();
+
+    private static final String PLAY_TOOLTIP = "PlayList에서 선택한 노래를 재생합니다.";
+    private static final String PAUSE_TOOLTIP = "재생 중인 노래를 일시 정지합니다.";
+    private static final String PREV_TOOLTIP = "PlayList에서 선택한 노래의 이전 곡을 재생합니다.";
+    private static final String NEXT_TOOLTIP = "PlayList에서 선택한 노래의 다음 곡을 재생합니다.";
+    private static final String ONCE_TOOLTIP = "PlayList에 있는 곡을 한 번씩만 재생합니다.";
+    private static final String REPEAT_TOOLTIP = "PlayList에 있는 곡을 반복해서 재생합니다.";
+    private static final String SHUFFLE_TOOLTIP = "PlayList에 있는 곡을 무작위 순서로 재생합니다.";
 
     private URL getResourceByPath(String path) {
         return Objects.requireNonNull(getClass().getClassLoader().getResource(path));
@@ -59,7 +59,7 @@ class MP3Body extends JFrame implements ActionListener {
 		musicBarSlider.setValue((int) (100 * (d1.toSeconds() / d2.toSeconds())));
 		player.setOnEndOfMedia(() -> {
 			int n = musicList.getSelectedIndex();
-			if (!optionButton[0].isEnabled()) {
+			if (!onceModeButton.isEnabled()) {
 				if (n < listModel.getSize() - 1) {
 					musicList.setSelectedIndex(n + 1);
 					musicTitleLabel.setText(musicList.getSelectedValue());
@@ -67,7 +67,7 @@ class MP3Body extends JFrame implements ActionListener {
 					player = new MediaPlayer(media);
 					player.play();
 				}
-			} else if (!optionButton[1].isEnabled()) {
+			} else if (!repeatModeButton.isEnabled()) {
 				if (n < listModel.getSize() - 1) {
 					musicList.setSelectedIndex(n + 1);
 					media = new Media(fileList.get(n + 1).toURI().toString());
@@ -138,7 +138,7 @@ class MP3Body extends JFrame implements ActionListener {
             musicBarSlider.setValue((int) percent);
             int pos = (int) player.getTotalDuration().toSeconds();
             player.seek(Duration.seconds(pos * (musicBarSlider.getValue() / 100.0)));
-            if (playButton[0].getIcon().equals(playButtonImage[3])) {
+            if (pauseButton.isEnabled()) {
                 player.play();
                 timer.start();
             } else
@@ -191,7 +191,7 @@ class MP3Body extends JFrame implements ActionListener {
 				player = new MediaPlayer(media);
 				player.play();
 				player.setVolume(0.3);
-				playButton[0].setIcon(playButtonImage[3]);
+				setPauseButtonEnabled();
 				musicTitleLabel.setText(musicList.getSelectedValue());
 			}
 		}
@@ -221,38 +221,59 @@ class MP3Body extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
+    private void setPlayButtonEnabled() {
+        playButton.setVisible(true);
+        playButton.setEnabled(true);
+        pauseButton.setVisible(false);
+        pauseButton.setEnabled(false);
+    }
+
+    private void setPauseButtonEnabled() {
+        pauseButton.setVisible(true);
+        pauseButton.setEnabled(true);
+        playButton.setVisible(false);
+        playButton.setEnabled(false);
+    }
+
     private void initButtonsEssentialToPlayingMusic() {
-        playButton = new MP3Button[3];
-        optionButton = new MP3Button[3];
+        setButtonsRelatedToPlayMusic();
+        setButtonsRelatedToPlayMode();
 
-        String[] playButtonFileName = {"재생.png", "이전곡.png", "다음곡.png", "일시정지.png"};
-        String[] optionButtonFileName = {"전체 한 번씩.png", "전체반복.png", "셔플.png"};
-        String[] playButtonToolTip = {
-            "PlayList에서 선택한 노래를 재생합니다.",
-            "PlayList에서 선택한 노래의 이전곡을 재생합니다.",
-            "PlayList에서 선택한 노래의 다음곡을 재생합니다."
-        };
-        String[] optionButtonToolTip = {
-            "PlayList에 있는 곡을 한 번씩만 재생합니다.",
-            "PlayList에 있는 곡을 반복해서 재생합니다.",
-            "PlayList에 있는 곡을 무작위로 재생합니다."
-        };
-        Point[] playButtonPos = {new Point(200, 30), new Point(80, 30), new Point(315, 30)};
+        onceModeButton.setEnabled(false);
+        setPlayButtonEnabled();
+    }
 
-        for (int i = 0; i < 3; i++) {
-            playButtonImage[i] = new ImageIcon(getResourceByPath(playButtonFileName[i]));
-            playButton[i] = new MP3Button(this, playButtonImage[i], new Dimension(100, 100),
-                playButtonPos[i], playButtonToolTip[i]);
-            panel.add(playButton[i]);
+    private void setButtonsRelatedToPlayMusic() {
+        Dimension size = new Dimension(100, 100);
 
-            optionButtonImage[i] = new ImageIcon(getResourceByPath(optionButtonFileName[i]));
-            optionButton[i] = new MP3Button(this, optionButtonImage[i], new Dimension(45, 40),
-                new Point(140 + i * 84, 170), optionButtonToolTip[i]);
-            panel.add(optionButton[i]);
-        }
+        playButton = new MP3Button(this, new ImageIcon(getResourceByPath("재생.png")), size,
+            new Point(200, 30), PLAY_TOOLTIP);
+        pauseButton = new MP3Button(this, new ImageIcon(getResourceByPath("일시정지.png")), size,
+            new Point(200, 30), PAUSE_TOOLTIP);
+        prevButton = new MP3Button(this, new ImageIcon(getResourceByPath("이전곡.png")), size,
+            new Point(80, 30), PREV_TOOLTIP);
+        nextButton = new MP3Button(this, new ImageIcon(getResourceByPath("다음곡.png")), size,
+            new Point(315, 30), NEXT_TOOLTIP);
 
-        optionButton[0].setEnabled(false);
-        playButtonImage[3] = new ImageIcon(getResourceByPath(playButtonFileName[3]));
+        panel.add(playButton);
+        panel.add(pauseButton);
+        panel.add(prevButton);
+        panel.add(nextButton);
+    }
+
+    private void setButtonsRelatedToPlayMode() {
+        Dimension size = new Dimension(45, 40);
+
+        onceModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("전체 한 번씩.png")), size,
+            new Point(140, 170), ONCE_TOOLTIP);
+        repeatModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("전체반복.png")), size,
+            new Point(224, 170), REPEAT_TOOLTIP);
+        shuffleModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("셔플.png")), size,
+            new Point(308, 170), SHUFFLE_TOOLTIP);
+
+        panel.add(onceModeButton);
+        panel.add(repeatModeButton);
+        panel.add(shuffleModeButton);
     }
 
     private void initAdditionalButtons() {
@@ -269,6 +290,7 @@ class MP3Body extends JFrame implements ActionListener {
         addButton.setSize(70, 30);
         addButton.addActionListener(this);
         addButton.setToolTipText("노래를 PlayList에 추가합니다.");
+
         panel.add(addButton);
     }
 
@@ -279,6 +301,7 @@ class MP3Body extends JFrame implements ActionListener {
         deleteButton.setEnabled(false);
         deleteButton.addActionListener(this);
         deleteButton.setToolTipText("선택한 노래를 PlayList에서 삭제합니다.");
+
         panel.add(deleteButton);
     }
 
@@ -288,16 +311,18 @@ class MP3Body extends JFrame implements ActionListener {
         searchButton.setSize(70, 30);
         searchButton.addActionListener(this);
         searchButton.setToolTipText("PlayList 안에 있는 노래들 중에서 검색합니다.");
+
         panel.add(searchButton);
     }
 
     private void initSendPlaylistButton() {
-        sendPlaylistButton = new JButton("목록 내보내기");
-        sendPlaylistButton.setLocation(52, 620);
-        sendPlaylistButton.setSize(117, 30);
-        sendPlaylistButton.addActionListener(this);
-        sendPlaylistButton.setToolTipText("PlayList를 파일로 저장합니다.");
-        panel.add(sendPlaylistButton);
+        savePlaylistButton = new JButton("목록 내보내기");
+        savePlaylistButton.setLocation(52, 620);
+        savePlaylistButton.setSize(117, 30);
+        savePlaylistButton.addActionListener(this);
+        savePlaylistButton.setToolTipText("PlayList를 파일로 저장합니다.");
+
+        panel.add(savePlaylistButton);
     }
 
     private void initFetchPlaylistButton() {
@@ -306,6 +331,7 @@ class MP3Body extends JFrame implements ActionListener {
         fetchPlayListButton.setSize(117, 30);
         fetchPlayListButton.addActionListener(this);
         fetchPlayListButton.setToolTipText("저장된 PlayList를 불러옵니다.");
+
         panel.add(fetchPlayListButton);
     }
 
@@ -346,6 +372,7 @@ class MP3Body extends JFrame implements ActionListener {
         scrollPane.setLocation(50, 280);
         scrollPane.setBorder(titleBorder);
         scrollPane.setOpaque(false);
+
         panel.add(scrollPane);
     }
 
@@ -354,6 +381,7 @@ class MP3Body extends JFrame implements ActionListener {
         searchField.setSize(305, 30);
         searchField.registerKeyboardAction(this, "search",
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
+
         panel.add(searchField);
     }
 
@@ -364,6 +392,7 @@ class MP3Body extends JFrame implements ActionListener {
         musicTitleLabel.setSize(500,20);
         musicTitleLabel.setLocation(0, 123);
         musicTitleLabel.setHorizontalAlignment(JLabel.CENTER);
+
         panel.add(musicTitleLabel);
     }
 
@@ -374,6 +403,7 @@ class MP3Body extends JFrame implements ActionListener {
         volumeLabel.setSize(100, 25);
         volumeLabel.setLocation(375, 12);
         volumeLabel.setText("Vol : " + volumeBarSlider.getValue());
+
         panel.add(volumeLabel);
     }
 
@@ -382,6 +412,7 @@ class MP3Body extends JFrame implements ActionListener {
         currentTimeLabel.setLocation(45, 180);
         currentTimeLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
         currentTimeLabel.setForeground(Color.BLUE);
+
         panel.add(currentTimeLabel);
     }
 
@@ -390,6 +421,7 @@ class MP3Body extends JFrame implements ActionListener {
         musicLengthLabel.setLocation(386, 180);
         musicLengthLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
         musicLengthLabel.setForeground(Color.BLUE);
+        
         panel.add(musicLengthLabel);
     }
 
@@ -422,17 +454,17 @@ class MP3Body extends JFrame implements ActionListener {
             deleteMusicFromPlaylist();
         else if (pressedbutton.equals(searchButton))
             searchMusic();
-        else if (pressedbutton.equals(sendPlaylistButton))
+        else if (pressedbutton.equals(savePlaylistButton))
             savePlaylistAsFile();
         else if (pressedbutton.equals(fetchPlayListButton))
             fetchPlaylistFromFile();
-        else if (pressedbutton.getIcon().equals(playButtonImage[0])) {
-            playMusic(pressedbutton);
-        } else if (pressedbutton.getIcon().equals(playButtonImage[3])) {
-            pauseMusic(pressedbutton);
-        } else if (pressedbutton.getIcon().equals(playButtonImage[1])) {
+        else if (pressedbutton.equals(playButton)) {
+            playMusic();
+        } else if (pressedbutton.equals(pauseButton)) {
+            pauseMusic();
+        } else if (pressedbutton.equals(prevButton)) {
             playPreviousMusic();
-        } else if (pressedbutton.getIcon().equals(playButtonImage[2])) {
+        } else if (pressedbutton.equals(nextButton)) {
             playNextMusic();
         } else {
             setPlayMode(pressedbutton);
@@ -468,7 +500,7 @@ class MP3Body extends JFrame implements ActionListener {
                     player = null;
                     media = null;
                     deleteButton.setEnabled(false);
-                    playButton[0].setIcon(playButtonImage[0]);
+                    setPlayButtonEnabled();
                     musicTitleLabel.setText("");
                     musicBarSlider.setVisible(false);
                     currentTimeLabel.setText("");
@@ -534,7 +566,7 @@ class MP3Body extends JFrame implements ActionListener {
                 listModel.clear();
                 player = null;
                 media = null;
-                playButton[0].setIcon(playButtonImage[0]);
+                setPlayButtonEnabled();
                 deleteButton.setEnabled(false);
                 ois = new ObjectInputStream(new FileInputStream(chooser.getSelectedFile()));
                 fileList = (ArrayList<File>)ois.readObject();
@@ -547,7 +579,7 @@ class MP3Body extends JFrame implements ActionListener {
         }
     }
 
-    private void playMusic(JButton pressedbutton) {
+    private void playMusic() {
         deleteButton.setEnabled(true);
         if (musicList.getSelectedIndices().length > 0)
             playWhenSelectMusic();
@@ -558,8 +590,7 @@ class MP3Body extends JFrame implements ActionListener {
         player.play();
         musicBarSlider.setVisible(true);
         musicTitleLabel.setText(musicList.getSelectedValue());
-        pressedbutton.setToolTipText("노래를 잠시 멈춥니다.");
-        pressedbutton.setIcon(playButtonImage[3]);
+        setPauseButtonEnabled();
     }
 
     private void playWhenSelectMusic() {
@@ -590,10 +621,9 @@ class MP3Body extends JFrame implements ActionListener {
         return false;
     }
 
-    private void pauseMusic(JButton pressedbutton) {
+    private void pauseMusic() {
         player.pause();
-        pressedbutton.setToolTipText("PlayList에서 선택한 노래를 재생합니다.");
-        pressedbutton.setIcon(playButtonImage[0]);
+        setPlayButtonEnabled();
     }
 
     private void playPreviousMusic() {
@@ -628,15 +658,15 @@ class MP3Body extends JFrame implements ActionListener {
 
     private void setPlayMode(JButton pressedbutton) {
         pressedbutton.setEnabled(false);
-        if (pressedbutton.getIcon().equals(optionButtonImage[0])) {
-            optionButton[1].setEnabled(true);
-            optionButton[2].setEnabled(true);
-        } else if (pressedbutton.getIcon().equals(optionButtonImage[1])) {
-            optionButton[0].setEnabled(true);
-            optionButton[2].setEnabled(true);
+        if (pressedbutton.equals(onceModeButton)) {
+            repeatModeButton.setEnabled(true);
+            shuffleModeButton.setEnabled(true);
+        } else if (pressedbutton.equals(repeatModeButton)) {
+            onceModeButton.setEnabled(true);
+            shuffleModeButton.setEnabled(true);
         } else {
-            optionButton[0].setEnabled(true);
-            optionButton[1].setEnabled(true);
+            onceModeButton.setEnabled(true);
+            repeatModeButton.setEnabled(true);
         }
     }
 }
