@@ -235,6 +235,11 @@ class MP3Body extends JFrame implements ActionListener {
         playButton.setEnabled(false);
     }
 
+    private ImageIcon setImageSize(ImageIcon icon, Dimension dimension) {
+        Image image = icon.getImage().getScaledInstance(dimension.width, dimension.height, Image.SCALE_SMOOTH);
+        return new ImageIcon(image);
+    }
+
     private void initButtonsEssentialToPlayingMusic() {
         setButtonsRelatedToPlayMusic();
         setButtonsRelatedToPlayMode();
@@ -244,16 +249,17 @@ class MP3Body extends JFrame implements ActionListener {
     }
 
     private void setButtonsRelatedToPlayMusic() {
-        Dimension size = new Dimension(100, 100);
+        Dimension big = new Dimension(100, 100);
+        Dimension small = new Dimension(50, 50);
 
-        playButton = new MP3Button(this, new ImageIcon(getResourceByPath("재생.png")), size,
-            new Point(200, 30), PLAY_TOOLTIP);
-        pauseButton = new MP3Button(this, new ImageIcon(getResourceByPath("일시정지.png")), size,
-            new Point(200, 30), PAUSE_TOOLTIP);
-        prevButton = new MP3Button(this, new ImageIcon(getResourceByPath("이전곡.png")), size,
-            new Point(80, 30), PREV_TOOLTIP);
-        nextButton = new MP3Button(this, new ImageIcon(getResourceByPath("다음곡.png")), size,
-            new Point(315, 30), NEXT_TOOLTIP);
+        playButton = new MP3Button(this, setImageSize(new ImageIcon(getResourceByPath("play.png")), big), big,
+            new Point(200, 20), PLAY_TOOLTIP);
+        pauseButton = new MP3Button(this, setImageSize(new ImageIcon(getResourceByPath("pause.png")), big), big,
+            new Point(200, 20), PAUSE_TOOLTIP);
+        prevButton = new MP3Button(this, setImageSize(new ImageIcon(getResourceByPath("prev.png")), small), small,
+            new Point(110, 45), PREV_TOOLTIP);
+        nextButton = new MP3Button(this, setImageSize(new ImageIcon(getResourceByPath("next.png")), small), small,
+            new Point(340, 45), NEXT_TOOLTIP);
 
         panel.add(playButton);
         panel.add(pauseButton);
@@ -262,14 +268,14 @@ class MP3Body extends JFrame implements ActionListener {
     }
 
     private void setButtonsRelatedToPlayMode() {
-        Dimension size = new Dimension(45, 40);
+        Dimension size = new Dimension(50, 40);
 
         onceModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("전체 한 번씩.png")), size,
-            new Point(140, 170), ONCE_TOOLTIP);
+            new Point(125, 170), ONCE_TOOLTIP);
         repeatModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("전체반복.png")), size,
-            new Point(224, 170), REPEAT_TOOLTIP);
+            new Point(225, 170), REPEAT_TOOLTIP);
         shuffleModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("셔플.png")), size,
-            new Point(308, 170), SHUFFLE_TOOLTIP);
+            new Point(325, 170), SHUFFLE_TOOLTIP);
 
         panel.add(onceModeButton);
         panel.add(repeatModeButton);
@@ -390,7 +396,7 @@ class MP3Body extends JFrame implements ActionListener {
         musicTitleLabel.setFont(new Font("경기천년제목 Medium", Font.PLAIN, 20));
         musicTitleLabel.setForeground(Color.ORANGE);
         musicTitleLabel.setSize(500,20);
-        musicTitleLabel.setLocation(0, 123);
+        musicTitleLabel.setLocation(0, 125);
         musicTitleLabel.setHorizontalAlignment(JLabel.CENTER);
 
         panel.add(musicTitleLabel);
@@ -409,19 +415,21 @@ class MP3Body extends JFrame implements ActionListener {
 
     private void initCurrentTimeLabel() {
         currentTimeLabel.setSize(55, 20);
-        currentTimeLabel.setLocation(45, 180);
+        currentTimeLabel.setLocation(35, 180);
         currentTimeLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
         currentTimeLabel.setForeground(Color.BLUE);
+        currentTimeLabel.setHorizontalAlignment(JLabel.CENTER);
 
         panel.add(currentTimeLabel);
     }
 
     private void initMusicLengthLabel() {
         musicLengthLabel.setSize(55, 20);
-        musicLengthLabel.setLocation(386, 180);
+        musicLengthLabel.setLocation(405, 180);
         musicLengthLabel.setFont(new Font("HY엽서M", Font.BOLD, 15));
         musicLengthLabel.setForeground(Color.BLUE);
-        
+        musicLengthLabel.setHorizontalAlignment(JLabel.CENTER);
+
         panel.add(musicLengthLabel);
     }
 
