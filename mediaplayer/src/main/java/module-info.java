@@ -6,8 +6,8 @@ module com.player.mediaplayer {
     requires javafx.graphics;
     requires javafx.swing;
     requires javafx.web;
-    requires javafx.swt;
-    requires jna.platform.win32;
+    requires com.sun.jna.platform;
+    requires com.google.common;
 
     opens com.player.mediaplayer to javafx.fxml;
     exports com.player.mediaplayer;
