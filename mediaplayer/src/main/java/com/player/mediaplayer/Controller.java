@@ -13,10 +13,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -35,7 +32,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Controller implements Initializable {
-    private boolean isRepeating, isFinding, isPlaybarMouseOn, isPlayMouseOn, isForwardMouseOn, isBackwardMouseOn, isFileMouseOn, isFullScreen, isPlaying;
+    private boolean isRepeating, isFinding, isFullScreen, isPlaying;
+    private boolean isPlaybarMouseOn, isPlayButtonMouseOn, isForwardButtonMouseOn, isBackwardButtonMouseOn, isFileButtonMouseOn;
     private int mouse_stop;
     private double sound;
     private final String playbarStyle = "-fx-background-color: linear-gradient(to right, #0303f2 %f%%, #15ff00 %f%%);\n-fx-pref-height: %d;";
@@ -53,57 +51,129 @@ public class Controller implements Initializable {
     @FXML private Text volumeText;
     @FXML private Label curTimeLabel, endTimeLabel;
 
-    /* 처음 app 실행 시 */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         loadSetting();
+        enableVideoReadyByDragAndDrop();
+        enableVideoPlayAfterDragAndDrop();
+        enableVideoControlWithKeyboard();
+        setInitialVolume();
+        setVolumeSliderEvent();
+        setPlaySliderEvent();
+        setVideoSizeByWindowSize();
+        setInitialVolumeButton();
 
-        // 동영상을 드래그 앤 드롭으로 재생할 수 있도록 설정
-        mediaArea.setOnDragOver(mouseEvent -> {
-            Dragboard db = mouseEvent.getDragboard();
-            if (db.hasFiles())
-                mouseEvent.acceptTransferModes(TransferMode.ANY);
-            mouseEvent.consume();
+        tooltip = createTooltip();
+    }
+
+    void loadSetting() {
+        try (ObjectInputStream ois = getObjectInputStream()) {
+            data = (HashMap<String, Integer>) ois.readObject();
+            registerStartProgram();
+        } catch (FileNotFoundException e) {
+            setDefaultSettings();
+            saveDefaultSettings();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    ObjectInputStream getObjectInputStream() throws IOException {
+        return new ObjectInputStream(new FileInputStream("C:\\Mediaplayer\\setting.dat"));
+    }
+
+    void registerStartProgram() {
+        String regPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+        String regName = "MediaPlayer";
+        String regValue = "\"" + Paths.get("").toAbsolutePath() + "\\MediaPlayer.exe\" /autorun";
+
+        if (data.get("autoStart") == 1) {
+            registerStartProgramWhenNotRegistered(regPath, regName, regValue);
+        } else {
+            deleteStartProgramWhenRegistered(regPath, regName);
+        }
+    }
+
+    void registerStartProgramWhenNotRegistered(String regPath, String regName, String regValue) {
+        if (!Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {
+            Advapi32Util.registryCreateKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
+            Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, regPath, regName, regValue);
+        }
+    }
+
+    void deleteStartProgramWhenRegistered(String regPath, String regName) {
+        if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {
+            Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, regPath, regName);
+            Advapi32Util.registryDeleteKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
+        }
+    }
+
+    void setDefaultSettings() {
+        data = new HashMap<>();
+        data.put(moveTime, 10);
+        data.put(vanishTime, 3);
+        data.put(startVolume, 20);
+        data.put(opacity, 10);
+        data.put("autoStart", 0);
+    }
+
+    void saveDefaultSettings() {
+        File path = new File("C:\\Mediaplayer");
+        if (path.mkdirs()) {
+            File savedFile = new File(path, "setting.dat");
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(savedFile.getAbsolutePath()))) {
+                oos.writeObject(data);
+                oos.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    void enableVideoReadyByDragAndDrop() {
+        mediaArea.setOnDragOver(e -> {
+            System.out.println("dragOver");
+            if (e.getDragboard().hasFiles())
+                e.acceptTransferModes(TransferMode.ANY);
+            e.consume();
         });
+    }
 
-        // 끌어온 동영상 파일을 app 내에 drop 하였을 때 바로 재생할 수 있도록 준비
-        mediaArea.setOnDragDropped(mouseEvent -> {
-            Dragboard db = mouseEvent.getDragboard();
+    void enableVideoPlayAfterDragAndDrop() {
+        mediaArea.setOnDragDropped(e -> {
+            System.out.println("dragDropped");
+            Dragboard db = e.getDragboard();
             boolean success = false;
 
             if (db.hasFiles()) {
                 success = true;
-                File file = db.getFiles().iterator().next();
-                playMedia(file);
+                playMedia(db.getFiles().get(0));
             }
-            mouseEvent.setDropCompleted(success);
-            mouseEvent.consume();
+            e.setDropCompleted(success);
+            e.consume();
         });
+    }
 
-        // 스페이스 바, 방향키로도 영상 제어할 수 있도록 함
+    void enableVideoControlWithKeyboard() {
         appArea.setOnKeyReleased(keyEvent -> {
             switch (keyEvent.getCode()) {
                 case SPACE -> {
                     if (mediaArea.getMediaPlayer() == null) {
                         onMouseFileButtonReleased();
-                        if (!isFileMouseOn)
+                        if (!isFileButtonMouseOn)
                             onMouseFileButtonExited();
                     } else {
                         onMousePlaybuttonReleased();
-                        if (!isPlayMouseOn) {
-                            if (mediaArea.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING)
-                                playButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("play.png"))));
-                            else
-                                playButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("pause.png"))));
-                        }
+                        if (!isPlayButtonMouseOn)
+                            modifyPlayButton();
                     }
                 } case RIGHT -> {
                     onMouseForwardbuttonReleased();
-                    if (!isForwardMouseOn)
+                    if (!isForwardButtonMouseOn)
                         onMouseForwardbuttonExited();
                 } case LEFT -> {
                     onMouseBackbuttonReleased();
-                    if (!isBackwardMouseOn)
+                    if (!isBackwardButtonMouseOn)
                         onMouseBackbuttonExited();
                 } case ENTER -> {
                     isFullScreen = !isFullScreen;
@@ -112,13 +182,23 @@ public class Controller implements Initializable {
                 }
             }
         });
+    }
 
-        // 볼륨 바 value, 드래그 관련 설정
+    void modifyPlayButton() {
+        if (mediaArea.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING)
+            playButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("play.png"))));
+        else
+            playButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("pause.png"))));
+    }
+
+    void setInitialVolume() {
         sound = data.get(startVolume);
         volumeSlider.setValue(sound);
+    }
+
+    void setVolumeSliderEvent() {
         volumeSlider.valueProperty().addListener((observableValue, number, t1) -> {
             onMouseMoved();
-
             volumeText.setText(Integer.toString(t1.intValue()));
             if (t1.intValue() == 0)
                 volumeButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("mute.png"))));
@@ -129,9 +209,10 @@ public class Controller implements Initializable {
             if (player != null)
                 player.setVolume(t1.intValue() / 100.0);
         });
-        volumeSlider.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);      // 방향키로 slider 조작하는 거 막음
+        volumeSlider.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);
+    }
 
-        // 재생 바 드래그 및 value 변화 시 관련 설정
+    void setPlaySliderEvent() {
         playSlider.setOnMouseDragged(e -> findPosition());
         playSlider.valueProperty().addListener((observableValue, number, t1) -> {
             if (isPlaybarMouseOn)
@@ -139,72 +220,25 @@ public class Controller implements Initializable {
             else
                 playSlider.lookup(".track").setStyle(String.format(playbarStyle, t1.doubleValue() * 100, t1.doubleValue() * 100, 2));
         });
-        playSlider.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);        // playSlider 도 방향키 조작 막음
+        playSlider.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);
+    }
 
-        // 창 크기에 따라서 영상 사이즈 변경
+    void setVideoSizeByWindowSize() {
         DoubleProperty width = mediaArea.fitWidthProperty();
         width.bind(Bindings.selectDouble(mediaArea.sceneProperty(), "width"));
         DoubleProperty height = mediaArea.fitHeightProperty();
         height.bind(Bindings.selectDouble(mediaArea.sceneProperty(), "height"));
+    }
 
+    void setInitialVolumeButton() {
         if (sound > 0)
             volumeButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("volume.png"))));
         else
             volumeButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("mute.png"))));
-
-        tooltip = new Tooltip();
     }
 
-    /* 미디어 플레이어 실행 시 혹은 설정 수정 후 파일 저장 및 로드 */
-    public void loadSetting() {
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream("C:\\Mediaplayer\\setting.dat"));
-            data = (HashMap<String, Integer>) ois.readObject();
-            ois.close();
-
-            registerStartProgram();
-        } catch (FileNotFoundException e) {                         // 경로에 설정 파일이 없을 때
-            data = new HashMap<>();
-            data.put(moveTime, 10);
-            data.put(vanishTime, 3);
-            data.put(startVolume, 20);
-            data.put(opacity, 10);
-            data.put("autoStart", 0);
-
-            try {                                                   // C 드라이브에 Mediaplayer 폴더 만들고 설정 파일 저장
-                File path = new File("C:\\Mediaplayer");
-                if (path.mkdirs()) {
-                    File savedFile = new File(path, "setting.dat");
-                    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(savedFile.getAbsolutePath()));
-                    oos.writeObject(data);
-                    oos.flush();
-                    oos.close();
-                }
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /* 시작 프로그램 등록 */
-    public void registerStartProgram() {
-        String regPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-        String regName = "MediaPlayer";
-        String regValue = "\"" + Paths.get("").toAbsolutePath() + "\\MediaPlayer.exe\" /autorun";
-
-        if (data.get("autoStart") == 1) {
-            if (!Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {    // 시작프로그램에 등록되어 있지 않을 때
-                Advapi32Util.registryCreateKey(WinReg.HKEY_CURRENT_USER, regPath, regName);                 // 레지스트리 키 생성
-                Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, regPath, regName, regValue);  // 레지스트리 값 설정
-            }
-        } else {
-            if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {     // 시작프로그램에 등록되어 있을 때
-                Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, regPath, regName);               // 레지스트리 값 삭제
-                Advapi32Util.registryDeleteKey(WinReg.HKEY_CURRENT_USER, regPath, regName);                 // 레지스트리 키 삭제(값 삭제가 선행)
-            }
-        }
+    Tooltip createTooltip() {
+        return new Tooltip();
     }
 
     /* 영상 재생 중일 때 마우스가 멈춰 있는 시간 측정 -> 3초 이상 움직이지 않았을 때 setVisibleOrNot 실행 */
@@ -329,7 +363,7 @@ public class Controller implements Initializable {
     /* 재생 버튼 관련 이벤트 */
     @FXML
     public void onMousePlaybuttonEntered() {
-        isPlayMouseOn = true;
+        isPlayButtonMouseOn = true;
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING) {
             playButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("pause-moused.png"))));
@@ -342,7 +376,7 @@ public class Controller implements Initializable {
     }
     @FXML
     public void onMousePlaybuttonExited() {
-        isPlayMouseOn = false;
+        isPlayButtonMouseOn = false;
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
             playButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("pause.png"))));
@@ -384,14 +418,14 @@ public class Controller implements Initializable {
     /* 영상 N초 앞으로 이동 버튼 관련 이벤트 */
     @FXML
     public void onMouseForwardbuttonEntered() {
-        isForwardMouseOn = true;
+        isForwardButtonMouseOn = true;
         tooltip.setText("앞으로 " + data.get(moveTime) + "초 이동");
         Tooltip.install(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("forward-moused.png"))));
     }
     @FXML
     public void onMouseForwardbuttonExited() {
-        isForwardMouseOn = false;
+        isForwardButtonMouseOn = false;
         Tooltip.uninstall(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("forward.png"))));
     }
@@ -414,14 +448,14 @@ public class Controller implements Initializable {
     /* 영상 N초 뒤로 이동 버튼 관련 이벤트 */
     @FXML
     public void onMouseBackbuttonEntered() {
-        isBackwardMouseOn = true;
+        isBackwardButtonMouseOn = true;
         tooltip.setText("뒤로 " + data.get(moveTime) + "초 이동");
         Tooltip.install(backButton.getParent(), tooltip);
         backButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("back-moused.png"))));
     }
     @FXML
     public void onMouseBackbuttonExited() {
-        isBackwardMouseOn = false;
+        isBackwardButtonMouseOn = false;
         Tooltip.uninstall(backButton.getParent(), tooltip);
         backButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("back.png"))));
     }
@@ -517,14 +551,14 @@ public class Controller implements Initializable {
     /* 파일 추가 버튼 관련 이벤트 */
     @FXML
     public void onMouseFileButtonEntered() {
-        isFileMouseOn = true;
+        isFileButtonMouseOn = true;
         tooltip.setText("동영상 추가");
         Tooltip.install(fileButton.getParent(), tooltip);
         fileButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("folder-moused.png"))));
     }
     @FXML
     public void onMouseFileButtonExited() {
-        isFileMouseOn = false;
+        isFileButtonMouseOn = false;
         Tooltip.uninstall(fileButton.getParent(), tooltip);
         fileButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("folder.png"))));
     }
@@ -580,10 +614,7 @@ public class Controller implements Initializable {
     }
     @FXML
     public void onMouseVolumebuttonExited() {
-        if (sound > 0)
-            volumeButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("volume.png"))));
-        else
-            volumeButton.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream("mute.png"))));
+        setInitialVolumeButton();
         Tooltip.uninstall(volumeButton.getParent(), tooltip);
     }
     @FXML
