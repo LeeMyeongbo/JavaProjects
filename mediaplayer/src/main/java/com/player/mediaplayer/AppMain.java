@@ -1,6 +1,5 @@
 package com.player.mediaplayer;
 
-import com.google.common.annotations.VisibleForTesting;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -72,10 +71,5 @@ public class AppMain extends Application {
 
     public static void main(String[] args) {
         launch();
-    }
-
-    @VisibleForTesting
-    void runApp() {
-        main(null);
     }
 }

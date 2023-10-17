@@ -35,7 +35,7 @@ public class Controller implements Initializable {
     private final String PLAYBAR_STYLE = "-fx-background-color: linear-gradient(to right, #0303f2 %f%%, #15ff00 %f%%);" +
         "\n-fx-pref-height: %d;";
     private boolean isRepeating, isFinding, isFullScreen, isPlaying;
-    private boolean isPlaybarMouseOn, isPlayButtonMouseOn, isForwardButtonMouseOn, isBackwardButtonMouseOn, isFileButtonMouseOn;
+    private boolean isPlayBarMouseOn, isPlayButtonMouseOn, isForwardButtonMouseOn, isBackwardButtonMouseOn, isFileButtonMouseOn;
     private int mouse_stop;
     private double sound;
     private Timer timer;
@@ -46,8 +46,7 @@ public class Controller implements Initializable {
     @FXML private MediaView mediaArea;
     @FXML private HBox buttonArea, volumeArea, etcArea;
     @FXML private VBox bgArea;
-    @FXML private Slider playBar;
-    @FXML private Slider volumeBar;
+    @FXML private Slider playBar, volumeBar;
     @FXML private Text volumeText;
     @FXML private Label curTimeLabel, endTimeLabel;
 
@@ -167,18 +166,18 @@ public class Controller implements Initializable {
                         if (!isFileButtonMouseOn)
                             onMouseFileButtonExited();
                     } else {
-                        onMousePlaybuttonReleased();
+                        onMousePlayButtonReleased();
                         if (!isPlayButtonMouseOn)
                             modifyPlayButton();
                     }
                 } case RIGHT -> {
-                    onMouseForwardbuttonReleased();
+                    onMouseForwardButtonReleased();
                     if (!isForwardButtonMouseOn)
-                        onMouseForwardbuttonExited();
+                        onMouseForwardButtonExited();
                 } case LEFT -> {
-                    onMouseBackbuttonReleased();
+                    onMouseBackButtonReleased();
                     if (!isBackwardButtonMouseOn)
-                        onMouseBackbuttonExited();
+                        onMouseBackButtonExited();
                 } case ENTER -> {
                     isFullScreen = !isFullScreen;
                     ((Stage)mediaArea.getScene().getWindow()).setFullScreenExitHint("");
@@ -219,7 +218,7 @@ public class Controller implements Initializable {
     void setPlayBarEvent() {
         playBar.setOnMouseDragged(e -> findPosition());
         playBar.valueProperty().addListener((observableValue, number, t1) -> {
-            if (isPlaybarMouseOn)
+            if (isPlayBarMouseOn)
                 playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, t1.doubleValue() * 100, t1.doubleValue() * 100, 8));
             else
                 playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, t1.doubleValue() * 100, t1.doubleValue() * 100, 2));
@@ -321,6 +320,7 @@ public class Controller implements Initializable {
         playButton.setImage(new Image(getStreamBySource("play.png")));
         appArea.setCursor(Cursor.DEFAULT);
         playBar.setValue(0.0);
+        curTimeLabel.setText("00:00:00");
         isPlaying = isRepeating;
         if (timer != null)
             timer.cancel();
@@ -383,7 +383,7 @@ public class Controller implements Initializable {
 
     /* 재생 버튼 관련 이벤트 */
     @FXML
-    public void onMousePlaybuttonEntered() {
+    public void onMousePlayButtonEntered() {
         isPlayButtonMouseOn = true;
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING) {
@@ -396,7 +396,7 @@ public class Controller implements Initializable {
         Tooltip.install(playButton.getParent(), tooltip);
     }
     @FXML
-    public void onMousePlaybuttonExited() {
+    public void onMousePlayButtonExited() {
         isPlayButtonMouseOn = false;
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
@@ -406,7 +406,7 @@ public class Controller implements Initializable {
         Tooltip.uninstall(playButton.getParent(), tooltip);
     }
     @FXML
-    public void onMousePlaybuttonPressed() {
+    public void onMousePlayButtonPressed() {
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
             playButton.setImage(new Image(getStreamBySource("pause-pressed.png")));
@@ -414,7 +414,7 @@ public class Controller implements Initializable {
             playButton.setImage(new Image(getStreamBySource("play-pressed.png")));
     }
     @FXML
-    public void onMousePlaybuttonReleased() {
+    public void onMousePlayButtonReleased() {
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
             if (player.getStatus() == MediaPlayer.Status.PLAYING) {
@@ -438,24 +438,24 @@ public class Controller implements Initializable {
 
     /* 영상 N초 앞으로 이동 버튼 관련 이벤트 */
     @FXML
-    public void onMouseForwardbuttonEntered() {
+    public void onMouseForwardButtonEntered() {
         isForwardButtonMouseOn = true;
         tooltip.setText("앞으로 " + data.get("moveTime") + "초 이동");
         Tooltip.install(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(getStreamBySource("forward-moused.png")));
     }
     @FXML
-    public void onMouseForwardbuttonExited() {
+    public void onMouseForwardButtonExited() {
         isForwardButtonMouseOn = false;
         Tooltip.uninstall(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(getStreamBySource("forward.png")));
     }
     @FXML
-    public void onMouseForwardbuttonPressed() {
+    public void onMouseForwardButtonPressed() {
         forwardButton.setImage(new Image(getStreamBySource("forward-pressed.png")));
     }
     @FXML
-    public void onMouseForwardbuttonReleased() {
+    public void onMouseForwardButtonReleased() {
         forwardButton.setImage(new Image(getStreamBySource("forward-moused.png")));
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
@@ -468,24 +468,24 @@ public class Controller implements Initializable {
 
     /* 영상 N초 뒤로 이동 버튼 관련 이벤트 */
     @FXML
-    public void onMouseBackbuttonEntered() {
+    public void onMouseBackButtonEntered() {
         isBackwardButtonMouseOn = true;
         tooltip.setText("뒤로 " + data.get("moveTime") + "초 이동");
         Tooltip.install(backButton.getParent(), tooltip);
         backButton.setImage(new Image(getStreamBySource("back-moused.png")));
     }
     @FXML
-    public void onMouseBackbuttonExited() {
+    public void onMouseBackButtonExited() {
         isBackwardButtonMouseOn = false;
         Tooltip.uninstall(backButton.getParent(), tooltip);
         backButton.setImage(new Image(getStreamBySource("back.png")));
     }
     @FXML
-    public void onMouseBackbuttonPressed() {
+    public void onMouseBackButtonPressed() {
         backButton.setImage(new Image(getStreamBySource("back-pressed.png")));
     }
     @FXML
-    public void onMouseBackbuttonReleased() {
+    public void onMouseBackButtonReleased() {
         backButton.setImage(new Image(getStreamBySource("back-moused.png")));
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
@@ -498,13 +498,13 @@ public class Controller implements Initializable {
 
     /* 영상 한 번만 재생 버튼 관련 이벤트 */
     @FXML
-    public void onMouseOnebuttonEntered() {
+    public void onMouseOneButtonEntered() {
         tooltip.setText("한 번만 재생");
         Tooltip.install(oneButton.getParent(), tooltip);
         oneButton.setImage(new Image(getStreamBySource("one-moused.png")));
     }
     @FXML
-    public void onMouseOnebuttonExited() {
+    public void onMouseOneButtonExited() {
         Tooltip.uninstall(oneButton.getParent(), tooltip);
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && !isRepeating)
@@ -513,11 +513,11 @@ public class Controller implements Initializable {
             oneButton.setImage(new Image(getStreamBySource("one.png")));
     }
     @FXML
-    public void onMouseOnebuttonPressed() {
+    public void onMouseOneButtonPressed() {
         oneButton.setImage(new Image(getStreamBySource("one-selected.png")));
     }
     @FXML
-    public void onMouseOnebuttonReleased() {
+    public void onMouseOneButtonReleased() {
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
             isRepeating = false;
@@ -531,13 +531,13 @@ public class Controller implements Initializable {
 
     /* 영상 반복 재생 버튼 관련 이벤트 */
     @FXML
-    public void onMouseRepeatbuttonEntered() {
+    public void onMouseRepeatButtonEntered() {
         tooltip.setText("반복 재생");
         Tooltip.install(repeatButton.getParent(), tooltip);
         repeatButton.setImage(new Image(getStreamBySource("repeat-moused.png")));
     }
     @FXML
-    public void onMouseRepeatbuttonExited() {
+    public void onMouseRepeatButtonExited() {
         Tooltip.uninstall(repeatButton.getParent(), tooltip);
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && isRepeating)
@@ -546,11 +546,11 @@ public class Controller implements Initializable {
             repeatButton.setImage(new Image(getStreamBySource("repeat.png")));
     }
     @FXML
-    public void onMouseRepeatbuttonPressed() {
+    public void onMouseRepeatButtonPressed() {
         repeatButton.setImage(new Image(getStreamBySource("repeat-selected.png")));
     }
     @FXML
-    public void onMouseRepeatbuttonReleased() {
+    public void onMouseRepeatButtonReleased() {
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
             isRepeating = true;
@@ -616,7 +616,7 @@ public class Controller implements Initializable {
 
     /* 볼륨 버튼 관련 이벤트 */
     @FXML
-    public void onMouseVolumebuttonEntered() {
+    public void onMouseVolumeButtonEntered() {
         if (sound > 0) {
             volumeButton.setImage(new Image(getStreamBySource("volume-moused.png")));
             tooltip.setText("볼륨");
@@ -627,19 +627,19 @@ public class Controller implements Initializable {
         Tooltip.install(volumeButton.getParent(), tooltip);
     }
     @FXML
-    public void onMouseVolumebuttonExited() {
+    public void onMouseVolumeButtonExited() {
         setInitialVolumeButton();
         Tooltip.uninstall(volumeButton.getParent(), tooltip);
     }
     @FXML
-    public void onMouseVolumebuttonPressed() {
+    public void onMouseVolumeButtonPressed() {
         if (sound > 0)
             volumeButton.setImage(new Image(getStreamBySource("volume-pressed.png")));
         else
             volumeButton.setImage(new Image(getStreamBySource("mute-pressed.png")));
     }
     @FXML
-    public void onMouseVolumebuttonReleased() {
+    public void onMouseVolumeButtonReleased() {
         if (sound == 0) {
             volumeButton.setImage(new Image(getStreamBySource("volume-moused.png")));
             sound = 20.0;
@@ -658,33 +658,33 @@ public class Controller implements Initializable {
 
     /* 볼륨 바 관련 이벤트 */
     @FXML
-    public void onMouseVolumebarEntered() {
+    public void onMouseVolumeBarEntered() {
         volumeText.setText(String.valueOf((int)volumeBar.getValue()));
         volumeText.setVisible(true);
     }
     @FXML
-    public void onMouseVolumebarExited() {
+    public void onMouseVolumeBarExited() {
         volumeText.setVisible(false);
     }
 
     /* 재생 바 관련 이벤트 */
     @FXML
-    public void onMousePlaybarEntered() {
-        isPlaybarMouseOn = true;
+    public void onMousePlayBarEntered() {
+        isPlayBarMouseOn = true;
         playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, playBar.getValue() * 100, playBar.getValue() * 100, 8));
     }
     @FXML
-    public void onMousePlaybarExited() {
-        isPlaybarMouseOn = false;
+    public void onMousePlayBarExited() {
+        isPlayBarMouseOn = false;
         playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, playBar.getValue() * 100, playBar.getValue() * 100, 2));
     }
     @FXML
-    public void onMousePlaybarPressed() {
+    public void onMousePlayBarPressed() {
         isFinding = true;
         findPosition();
     }
     @FXML
-    public void onMousePlaybarReleased() {
+    public void onMousePlayBarReleased() {
         isFinding = false;
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && isPlaying)
@@ -695,5 +695,6 @@ public class Controller implements Initializable {
     public void shutdown() {
         if (timer != null)
             timer.cancel();
+        timer = null;
     }
 }

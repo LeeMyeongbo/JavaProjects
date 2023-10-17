@@ -30,8 +30,6 @@ public class AppMainTest {
     private static Image mockImage;
     private static AppMain.CloseHandler mockHandler;
 
-    private static MockedStatic<AppMain> mockedStaticTestTarget;
-
     private static void setupTest() {
         mockTestTarget = mock(AppMain.class);
         mockLoader = mock(FXMLLoader.class);
@@ -43,9 +41,6 @@ public class AppMainTest {
         mockImage = mock(Image.class);
         mockHandler = mock(AppMain.CloseHandler.class);
 
-        mockedStaticTestTarget = mockStatic(AppMain.class);
-
-        lenient().doCallRealMethod().when(mockTestTarget).runApp();
         lenient().doCallRealMethod().when(mockTestTarget).start(mockStage);
         lenient().doCallRealMethod().when(mockTestTarget).setStage(mockStage, mockScene, mockController);
         lenient().doCallRealMethod().when(mockHandler).setController(mockController);
@@ -60,27 +55,6 @@ public class AppMainTest {
     }
 
     private static void teardownTest() {
-        mockedStaticTestTarget.close();
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class TestMain {
-        @Before
-        public void setup() {
-            setupTest();
-        }
-
-        @After
-        public void teardown() {
-            teardownTest();
-        }
-
-        @Test
-        public void test() {
-            mockTestTarget.runApp();
-
-            mockedStaticTestTarget.verify(() -> AppMain.main(null), times(1));
-        }
     }
 
     @RunWith(MockitoJUnitRunner.class)

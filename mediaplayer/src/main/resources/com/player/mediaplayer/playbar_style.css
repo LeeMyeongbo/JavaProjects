@@ -1,11 +1,11 @@
 /* Styling the slider track */
-#playslider .track {
+#playBar .track {
      -fx-background-color: linear-gradient(to right, #0303f2 0%, #15ff00 0%);
      -fx-pref-height: 2;
 }
 
 /* Styling the slider thumb */
-#playslider .thumb {
+#playBar .thumb {
      -fx-background-color: #fe0000
 }
 
