@@ -1,31 +1,28 @@
 package com.player.mediaplayer;
 
+import com.google.common.annotations.VisibleForTesting;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Objects;
 
 public class AppMain extends Application {
+    private Controller controller;
 
     @Override
     public void start(Stage stage) {
-        FXMLLoader loader = createLoader();
+        FXMLLoader loader = new FXMLLoader(getResource("app-view.fxml"));
         Scene scene = createScene(loader);
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("app-style.css")).toString());
-        Controller controller = loader.getController();
+        scene.getStylesheets().add(getResource("app-style.css").toString());
+        controller = loader.getController();
 
-        setStage(stage, scene, controller);
+        setStage(stage, scene);
         stage.show();
-    }
-
-    FXMLLoader createLoader() {
-        return new FXMLLoader(getClass().getResource("app-view.fxml"));
     }
 
     Scene createScene(FXMLLoader loader) {
@@ -36,40 +33,25 @@ public class AppMain extends Application {
         }
     }
 
-    Image createMediaPlayerIcon() {
-        return new Image(Objects.requireNonNull(getClass().getResource("video_player_icon.png")).toExternalForm());
-    }
-
-    void setStage(Stage stage, Scene scene, Controller controller) {
+    void setStage(Stage stage, Scene scene) {
         stage.setTitle("동영상 플레이어");
         stage.setMinWidth(900.0);
         stage.setMinHeight(600.0);
         stage.setScene(scene);
-
-        CloseHandler handler = createCloseHandler();
-        handler.setController(controller);
-        stage.setOnCloseRequest(handler);
-        stage.getIcons().add(createMediaPlayerIcon());
+        stage.setOnCloseRequest(e -> controller.shutdown());
+        stage.getIcons().add(new Image(getResource("video_player_icon.png").toExternalForm()));
     }
 
-    CloseHandler createCloseHandler() {
-        return new CloseHandler();
-    }
-
-    static class CloseHandler implements EventHandler<WindowEvent> {
-        private Controller controller;
-
-        void setController(Controller controller) {
-            this.controller = controller;
-        }
-
-        @Override
-        public void handle(WindowEvent windowEvent) {
-            controller.shutdown();
-        }
+    URL getResource(String source) {
+        return Objects.requireNonNull(getClass().getResource(source));
     }
 
     public static void main(String[] args) {
         launch();
+    }
+
+    @VisibleForTesting
+    final Controller getController() {
+        return controller;
     }
 }
