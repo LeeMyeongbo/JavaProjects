@@ -11,9 +11,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Objects;
 
+import static com.player.mediaplayer.SettingDataManager.getEntireData;
 import static org.testfx.api.FxAssert.verifyThat;
 
-public class LoadSettingTest extends ControllerTest {
+public class LoadSettingTest extends MainControllerTest {
     HashMap<String, Integer> answerData;
 
     public LoadSettingTest() {
@@ -38,7 +39,7 @@ public class LoadSettingTest extends ControllerTest {
     }
 
     private void verifySettingDataIsCorrect() {
-        verifyThat(getController().getData(), new BaseMatcher<>() {
+        verifyThat(getEntireData(), new BaseMatcher<>() {
 
             @Override
             public boolean matches(Object o) {

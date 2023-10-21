@@ -9,7 +9,7 @@
 <?import javafx.scene.media.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.Controller">
+<StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.MainController">
    <MediaView fx:id="mediaArea" fitHeight="650.0" fitWidth="850.0" onMouseClicked="#onMouseDoubleClick" StackPane.alignment="CENTER" />
    <VBox id="bgArea" fx:id="bgArea" alignment="BOTTOM_CENTER" prefHeight="200.0" prefWidth="100.0">
       <AnchorPane>

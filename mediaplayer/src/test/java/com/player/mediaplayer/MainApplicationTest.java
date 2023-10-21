@@ -16,13 +16,13 @@ import java.util.concurrent.TimeoutException;
 
 import static org.testfx.api.FxAssert.verifyThat;
 
-public class AppMainTest extends ApplicationTest {
+public class MainApplicationTest extends ApplicationTest {
     private Stage testStage;
 
     @Override
     public void start(Stage stage) {
         testStage = new Stage();
-        new AppMain().start(testStage);
+        new MainApplication().start(testStage);
     }
 
     @After

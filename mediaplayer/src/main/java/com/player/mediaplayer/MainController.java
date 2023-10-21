@@ -1,6 +1,5 @@
 package com.player.mediaplayer;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
 import javafx.beans.binding.Bindings;
@@ -32,9 +31,10 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.player.mediaplayer.Utils.getStreamBySource;
+import static com.player.mediaplayer.SettingDataManager.*;
+import static com.player.mediaplayer.Utils.*;
 
-public class Controller implements Initializable {
+public class MainController implements Initializable {
     private final String PLAYBAR_STYLE = "-fx-background-color: linear-gradient(to right, #0303f2 %f%%, #15ff00 %f%%);" +
         "\n-fx-pref-height: %d;";
     private boolean isRepeating, isFinding, isFullScreen, isPlaying;
@@ -43,7 +43,6 @@ public class Controller implements Initializable {
     private double sound;
     private Timer timer;
     private Tooltip tooltip;
-    private HashMap<String, Integer> data;
     @FXML private StackPane appArea;
     @FXML private ImageView playButton, backButton, forwardButton, oneButton, repeatButton, volumeButton, fileButton, settingButton;
     @FXML private MediaView mediaArea;
@@ -55,7 +54,8 @@ public class Controller implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        loadSetting();
+        loadSettingsFromFile();
+        manageStartProgramRegistration();
         enableMediaReadyByDragAndDrop();
         enableMediaPlayAfterDragAndDrop();
         enableMediaControlWithKeyboard();
@@ -68,24 +68,12 @@ public class Controller implements Initializable {
         tooltip = new Tooltip();
     }
 
-    void loadSetting() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("C:\\Mediaplayer\\setting.dat"))) {
-            data = (HashMap<String, Integer>) ois.readObject();
-            manageStartProgramRegistration();
-        } catch (FileNotFoundException e) {
-            setDefaultSettings();
-            saveDefaultSettings();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     void manageStartProgramRegistration() {
         String regPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
         String regName = "MediaPlayer";
         String regValue = "\"" + Paths.get("").toAbsolutePath() + "\\MediaPlayer.exe\" /autorun";
 
-        if (data.get("autoStart") == 1) {
+        if (getData("autoStart") == 1) {
             registerStartProgramWhenNotRegistered(regPath, regName, regValue);
         } else {
             deleteStartProgramWhenRegistered(regPath, regName);
@@ -103,28 +91,6 @@ public class Controller implements Initializable {
         if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, regPath, regName);
             Advapi32Util.registryDeleteKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
-        }
-    }
-
-    void setDefaultSettings() {
-        data = new HashMap<>();
-        data.put("moveTime", 10);
-        data.put("vanishTime", 3);
-        data.put("startVolume", 20);
-        data.put("opacity", 10);
-        data.put("autoStart", 0);
-    }
-
-    void saveDefaultSettings() {
-        File path = new File("C:\\Mediaplayer");
-        if (path.mkdirs()) {
-            String AbsolutePath = new File(path, "setting.dat").getAbsolutePath();
-            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(AbsolutePath))) {
-                oos.writeObject(data);
-                oos.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
@@ -190,7 +156,7 @@ public class Controller implements Initializable {
     }
 
     void setInitialVolume() {
-        sound = data.get("startVolume");
+        sound = getData("startVolume");
         volumeBar.setValue(sound);
     }
 
@@ -243,9 +209,9 @@ public class Controller implements Initializable {
             @Override
             public void run() {
                 mouse_stop++;
-                if (mouse_stop == data.get("vanishTime")) {
+                if (mouse_stop == getData("vanishTime")) {
                     appArea.setCursor(Cursor.NONE);
-                    setComponentVisibility(1.0 - data.get("opacity") / 10.0);
+                    setComponentVisibility(1.0 - getData("opacity") / 10.0);
                 }
             }
         };
@@ -361,7 +327,7 @@ public class Controller implements Initializable {
     public void onMouseExited() {           // 프로그램 밖으로 마우스가 빠져나가면 안 보이게끔 설정
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
-            setComponentVisibility(1.0 - data.get("opacity") / 10.0);
+            setComponentVisibility(1.0 - getData("opacity") / 10.0);
     }
     @FXML
     public void onMouseDoubleClick(MouseEvent mouseEvent) {         // 더블 클릭 시 전체화면
@@ -431,7 +397,7 @@ public class Controller implements Initializable {
     @FXML
     public void onMouseForwardButtonEntered() {
         isForwardButtonMouseOn = true;
-        tooltip.setText("앞으로 " + data.get("moveTime") + "초 이동");
+        tooltip.setText("앞으로 " + getData("moveTime") + "초 이동");
         Tooltip.install(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward-moused.png")));
     }
@@ -450,7 +416,7 @@ public class Controller implements Initializable {
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward-moused.png")));
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
-            double time = player.getCurrentTime().toSeconds() + data.get("moveTime");
+            double time = player.getCurrentTime().toSeconds() + getData("moveTime");
             player.seek(Duration.seconds(time));
             playBar.setValue(time / player.getTotalDuration().toSeconds());
             curTimeLabel.setText(getTime(player.getCurrentTime()));
@@ -461,7 +427,7 @@ public class Controller implements Initializable {
     @FXML
     public void onMouseBackButtonEntered() {
         isBackwardButtonMouseOn = true;
-        tooltip.setText("뒤로 " + data.get("moveTime") + "초 이동");
+        tooltip.setText("뒤로 " + getData("moveTime") + "초 이동");
         Tooltip.install(backButton.getParent(), tooltip);
         backButton.setImage(new Image(getStreamBySource(getClass(), "back-moused.png")));
     }
@@ -480,7 +446,7 @@ public class Controller implements Initializable {
         backButton.setImage(new Image(getStreamBySource(getClass(), "back-moused.png")));
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
-            double time = player.getCurrentTime().toSeconds() - data.get("moveTime");
+            double time = player.getCurrentTime().toSeconds() - getData("moveTime");
             player.seek(Duration.seconds(time));
             playBar.setValue(time / player.getTotalDuration().toSeconds());
             curTimeLabel.setText(getTime(player.getCurrentTime()));
@@ -598,11 +564,10 @@ public class Controller implements Initializable {
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting-pressed.png")));
     }
     @FXML
-    public void onMouseSettingButtonReleased() throws IOException {    // 버튼 눌렀다 떼었을 때 설정 창 오픈
+    public void onMouseSettingButtonReleased() {    // 버튼 눌렀다 떼었을 때 설정 창 오픈
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting-moused.png")));
-        SettingStage settingStage = new SettingStage();
-        settingStage.showAndWait();
-        loadSetting();
+        new SettingApplication().start(new Stage());
+        manageStartProgramRegistration();
     }
 
     /* 볼륨 버튼 관련 이벤트 */
@@ -631,7 +596,7 @@ public class Controller implements Initializable {
     }
     @FXML
     public void onMouseVolumeButtonReleased() {
-        if (sound == 0) {
+        if (Double.compare(sound, 0.0) == 0) {
             volumeButton.setImage(new Image(getStreamBySource(getClass(), "volume-moused.png")));
             sound = 20.0;
         }
@@ -644,7 +609,7 @@ public class Controller implements Initializable {
 
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null)
-            player.setVolume(sound);
+            player.setVolume(sound / 100);
     }
 
     /* 볼륨 바 관련 이벤트 */
@@ -687,10 +652,5 @@ public class Controller implements Initializable {
         if (timer != null)
             timer.cancel();
         timer = null;
-    }
-
-    @VisibleForTesting
-    final HashMap<String, Integer> getData() {
-        return data;
     }
 }
