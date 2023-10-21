@@ -68,7 +68,7 @@ public class MainController implements Initializable {
         tooltip = new Tooltip();
     }
 
-    void manageStartProgramRegistration() {
+    private void manageStartProgramRegistration() {
         String regPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
         String regName = "MediaPlayer";
         String regValue = "\"" + Paths.get("").toAbsolutePath() + "\\MediaPlayer.exe\" /autorun";
@@ -80,21 +80,21 @@ public class MainController implements Initializable {
         }
     }
 
-    void registerStartProgramWhenNotRegistered(String regPath, String regName, String regValue) {
+    private void registerStartProgramWhenNotRegistered(String regPath, String regName, String regValue) {
         if (!Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {
             Advapi32Util.registryCreateKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
             Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, regPath, regName, regValue);
         }
     }
 
-    void deleteStartProgramWhenRegistered(String regPath, String regName) {
+    private void deleteStartProgramWhenRegistered(String regPath, String regName) {
         if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, regPath, regName);
             Advapi32Util.registryDeleteKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
         }
     }
 
-    void enableMediaReadyByDragAndDrop() {
+    private void enableMediaReadyByDragAndDrop() {
         mediaArea.setOnDragOver(e -> {
             System.out.println("dragOver");
             if (e.getDragboard().hasFiles())
@@ -103,7 +103,7 @@ public class MainController implements Initializable {
         });
     }
 
-    void enableMediaPlayAfterDragAndDrop() {
+    private void enableMediaPlayAfterDragAndDrop() {
         mediaArea.setOnDragDropped(e -> {
             System.out.println("dragDropped");
             Dragboard db = e.getDragboard();
@@ -118,7 +118,7 @@ public class MainController implements Initializable {
         });
     }
 
-    void enableMediaControlWithKeyboard() {
+    private void enableMediaControlWithKeyboard() {
         appArea.setOnKeyReleased(keyEvent -> {
             switch (keyEvent.getCode()) {
                 case SPACE -> {
@@ -148,19 +148,19 @@ public class MainController implements Initializable {
         });
     }
 
-    void modifyPlayButton() {
+    private void modifyPlayButton() {
         if (mediaArea.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING)
             playButton.setImage(new Image(getStreamBySource(getClass(), "play.png")));
         else
             playButton.setImage(new Image(getStreamBySource(getClass(), "pause.png")));
     }
 
-    void setInitialVolume() {
+    private void setInitialVolume() {
         sound = getData("startVolume");
         volumeBar.setValue(sound);
     }
 
-    void setVolumeBarEvent() {
+    private void setVolumeBarEvent() {
         volumeBar.valueProperty().addListener((observableValue, number, t1) -> {
             onMouseMoved();
             volumeText.setText(Integer.toString(t1.intValue()));
@@ -176,7 +176,7 @@ public class MainController implements Initializable {
         volumeBar.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);
     }
 
-    void setPlayBarEvent() {
+    private void setPlayBarEvent() {
         playBar.setOnMouseDragged(e -> findPosition());
         playBar.valueProperty().addListener((observableValue, number, t1) -> {
             if (isPlayBarMouseOn)
@@ -187,22 +187,21 @@ public class MainController implements Initializable {
         playBar.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);
     }
 
-    void setMediaSizeByWindowSize() {
+    private void setMediaSizeByWindowSize() {
         DoubleProperty width = mediaArea.fitWidthProperty();
         width.bind(Bindings.selectDouble(mediaArea.sceneProperty(), "width"));
         DoubleProperty height = mediaArea.fitHeightProperty();
         height.bind(Bindings.selectDouble(mediaArea.sceneProperty(), "height"));
     }
 
-    void setInitialVolumeButton() {
+    private void setInitialVolumeButton() {
         if (sound > 0)
             volumeButton.setImage(new Image(getStreamBySource(getClass(), "volume.png")));
         else
             volumeButton.setImage(new Image(getStreamBySource(getClass(), "mute.png")));
     }
 
-    /* 영상 재생 중일 때 마우스가 멈춰 있는 시간 측정 -> 3초 이상 움직이지 않았을 때 setVisibleOrNot 실행 */
-    public void startTask() {
+    private void startTask() {
         timer = new Timer();
         mouse_stop = 0;
         TimerTask task = new TimerTask() {
@@ -218,8 +217,7 @@ public class MainController implements Initializable {
         timer.scheduleAtFixedRate(task, 0, 1000);
     }
 
-    /* 지원되는 동영상 파일 확장자 이외의 파일을 열 경우 */
-    public void errorDialog() {
+    private void errorDialog() {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("형식 오류!");
@@ -228,8 +226,7 @@ public class MainController implements Initializable {
         dialog.showAndWait();
     }
 
-    /* 컴포넌트들 보이거나 안 보이도록 함 */
-    public void setComponentVisibility(double v) {
+    private void setComponentVisibility(double v) {
         buttonArea.setOpacity(v);
         volumeArea.setOpacity(v);
         etcArea.setOpacity(v);
@@ -242,8 +239,8 @@ public class MainController implements Initializable {
         else
             bgArea.setStyle("-fx-background-color: linear-gradient(to top, rgba(18, 8, 65, 0.65) 20%, transparent);");
     }
-    
-    public void setupMedia(File file) {
+
+    private void setupMedia(File file) {
         try {
             disposePriorMedia();
             MediaPlayer player = new MediaPlayer(new Media(file.toURI().toString()));
@@ -263,7 +260,7 @@ public class MainController implements Initializable {
         }
     }
 
-    void disposePriorMedia() {
+    private void disposePriorMedia() {
         if (mediaArea.getMediaPlayer() != null) {
             MediaPlayer exMediaPlayer = mediaArea.getMediaPlayer();
             exMediaPlayer.stop();
@@ -271,7 +268,7 @@ public class MainController implements Initializable {
         }
     }
 
-    void setMediaReadyToPlay(MediaPlayer player) {
+    private void setMediaReadyToPlay(MediaPlayer player) {
         player.stop();
         player.seek(Duration.ZERO);
         playButton.setImage(new Image(getStreamBySource(getClass(), "play.png")));
@@ -285,7 +282,7 @@ public class MainController implements Initializable {
         setComponentVisibility(1.0);
     }
 
-    void updatePlayBarInRealTime(MediaPlayer player) {
+    private void updatePlayBarInRealTime(MediaPlayer player) {
         player.currentTimeProperty().addListener((observableValue, duration, t1) -> {
             double progress = player.getCurrentTime().toSeconds() / player.getTotalDuration().toSeconds();
             playBar.setValue(progress);
@@ -293,14 +290,13 @@ public class MainController implements Initializable {
         });
     }
 
-    void prepareInitialPlaying(MediaPlayer player) {
+    private void prepareInitialPlaying(MediaPlayer player) {
         mediaArea.setMediaPlayer(player);
         isRepeating = false;
         oneButton.setImage(new Image(getStreamBySource(getClass(), "one-selected.png")));
     }
 
-    /* 재생 바로 현재 위치 직접 찾을 때 */
-    public void findPosition() {
+    private void findPosition() {
         onMouseMoved();
         double pos = playBar.getValue();
         MediaPlayer player = mediaArea.getMediaPlayer();
@@ -311,26 +307,24 @@ public class MainController implements Initializable {
         }
     }
 
-    /* 영상 재생 시 시간 표시 */
-    public String getTime(Duration d) {
+    private String getTime(Duration d) {
         return String.format("%02d:%02d:%02d", (int)d.toHours(), (int)d.toMinutes() % 60, (int)d.toSeconds() % 60);
     }
 
-    /* 마우스가 응용프로그램 내에서 움직일 때 or 프로그램 밖으로 나갈 때 or 더블 클릭 시 관련 이벤트 처리 */
     @FXML
-    public void onMouseMoved() {            // 프로그램 내에서 마우스 움직일 땐 버튼들 및 slider 들 보이게 설정
+    public void onMouseMoved() {
         setComponentVisibility(1.0);
         appArea.setCursor(Cursor.DEFAULT);
         mouse_stop = 0;
     }
     @FXML
-    public void onMouseExited() {           // 프로그램 밖으로 마우스가 빠져나가면 안 보이게끔 설정
+    public void onMouseExited() {
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
             setComponentVisibility(1.0 - getData("opacity") / 10.0);
     }
     @FXML
-    public void onMouseDoubleClick(MouseEvent mouseEvent) {         // 더블 클릭 시 전체화면
+    public void onMouseDoubleClick(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
             isFullScreen = !isFullScreen;
             ((Stage)mediaArea.getScene().getWindow()).setFullScreenExitHint("");
@@ -338,7 +332,6 @@ public class MainController implements Initializable {
         }
     }
 
-    /* 재생 버튼 관련 이벤트 */
     @FXML
     public void onMousePlayButtonEntered() {
         isPlayButtonMouseOn = true;
@@ -393,7 +386,6 @@ public class MainController implements Initializable {
         }
     }
 
-    /* 영상 N초 앞으로 이동 버튼 관련 이벤트 */
     @FXML
     public void onMouseForwardButtonEntered() {
         isForwardButtonMouseOn = true;
@@ -423,7 +415,6 @@ public class MainController implements Initializable {
         }
     }
 
-    /* 영상 N초 뒤로 이동 버튼 관련 이벤트 */
     @FXML
     public void onMouseBackButtonEntered() {
         isBackwardButtonMouseOn = true;
@@ -453,7 +444,6 @@ public class MainController implements Initializable {
         }
     }
 
-    /* 영상 한 번만 재생 버튼 관련 이벤트 */
     @FXML
     public void onMouseOneButtonEntered() {
         tooltip.setText("한 번만 재생");
@@ -486,7 +476,6 @@ public class MainController implements Initializable {
             oneButton.setImage(new Image(getStreamBySource(getClass(), "one-moused.png")));
     }
 
-    /* 영상 반복 재생 버튼 관련 이벤트 */
     @FXML
     public void onMouseRepeatButtonEntered() {
         tooltip.setText("반복 재생");
@@ -519,7 +508,6 @@ public class MainController implements Initializable {
             repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat-moused.png")));
     }
 
-    /* 파일 추가 버튼 관련 이벤트 */
     @FXML
     public void onMouseFileButtonEntered() {
         isFileButtonMouseOn = true;
@@ -538,7 +526,7 @@ public class MainController implements Initializable {
         fileButton.setImage(new Image(getStreamBySource(getClass(), "folder-pressed.png")));
     }
     @FXML
-    public void onMouseFileButtonReleased() {       // 버튼을 눌었다 떼었을 때 파일 선택기 오픈
+    public void onMouseFileButtonReleased() {
         fileButton.setImage(new Image(getStreamBySource(getClass(), "folder-moused.png")));
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("비디오 선택");
@@ -547,7 +535,6 @@ public class MainController implements Initializable {
         setupMedia(file);
     }
 
-    /* 설정 버튼 관련 이벤트 */
     @FXML
     public void onMouseSettingButtonEntered() {
         tooltip.setText("설정");
@@ -564,13 +551,12 @@ public class MainController implements Initializable {
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting-pressed.png")));
     }
     @FXML
-    public void onMouseSettingButtonReleased() {    // 버튼 눌렀다 떼었을 때 설정 창 오픈
+    public void onMouseSettingButtonReleased() {
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting-moused.png")));
         new SettingApplication().start(new Stage());
         manageStartProgramRegistration();
     }
 
-    /* 볼륨 버튼 관련 이벤트 */
     @FXML
     public void onMouseVolumeButtonEntered() {
         if (sound > 0) {
@@ -612,7 +598,6 @@ public class MainController implements Initializable {
             player.setVolume(sound / 100);
     }
 
-    /* 볼륨 바 관련 이벤트 */
     @FXML
     public void onMouseVolumeBarEntered() {
         volumeText.setText(String.valueOf((int)volumeBar.getValue()));
@@ -623,7 +608,6 @@ public class MainController implements Initializable {
         volumeText.setVisible(false);
     }
 
-    /* 재생 바 관련 이벤트 */
     @FXML
     public void onMousePlayBarEntered() {
         isPlayBarMouseOn = true;
@@ -647,7 +631,6 @@ public class MainController implements Initializable {
             player.play();
     }
 
-    /* 동영상 플레이어 창 닫을 시 timer 동작하고 있다면 먼저 종료시킴 */
     public void shutdown() {
         if (timer != null)
             timer.cancel();
