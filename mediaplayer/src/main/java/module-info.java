@@ -8,6 +8,8 @@ module com.player.mediaplayer {
     requires javafx.web;
     requires com.sun.jna.platform;
     requires com.google.common;
+    requires org.apache.logging.log4j;
+    requires org.apache.logging.log4j.core;
 
     opens com.player.mediaplayer to javafx.fxml;
     exports com.player.mediaplayer;

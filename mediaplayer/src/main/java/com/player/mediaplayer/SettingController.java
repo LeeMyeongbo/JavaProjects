@@ -29,35 +29,35 @@ public class SettingController implements Initializable {
 
     private void setMoveTimeCheckComponent() {
         moveTimeBox.getItems().addAll(5, 10, 15, 20, 30);
-        moveTimeBox.setValue(getData("moveTime"));
+        moveTimeBox.setValue(getMoveTimeValue());
     }
 
     private void setVanishTimeCheckComponent() {
         vanishTimeBox.getItems().addAll(3, 5, 10, 15, 20);
-        vanishTimeBox.setValue(getData("vanishTime"));
+        vanishTimeBox.setValue(getVanishTimeValue());
     }
 
     private void setStartVolumeCheckComponent() {
-        startVolumeSlider.setValue(getData("startVolume"));
+        startVolumeSlider.setValue(getStartVolumeValue());
         startVolumeSlider.valueProperty().addListener((observableValue, number, t1) -> {
             startVolumeSlider.setValue(t1.intValue());
             startVolumeLabel.setText(String.valueOf(t1.intValue()));
         });
-        startVolumeLabel.setText(String.valueOf(getData("startVolume")));
+        startVolumeLabel.setText(String.valueOf(getStartVolumeValue()));
     }
 
     private void setOpacityCheckComponent() {
-        opacitySlider.setValue(getData("opacity") / 10.0);
+        opacitySlider.setValue(getOpacityValue() / 10.0);
         opacitySlider.valueProperty().addListener((observableValue, number, t1) -> {
             double val = Math.round(t1.doubleValue() * 10) / 10.0;
             opacitySlider.setValue(val);
             opacityLabel.setText(String.valueOf(val));
         });
-        opacityLabel.setText(String.valueOf(getData("opacity") / 10.0));
+        opacityLabel.setText(String.valueOf(getOpacityValue() / 10.0));
     }
 
     private void setAutoStartCheckComponent() {
-        autoStartCheck.setSelected(getData("autoStart") != 0);
+        autoStartCheck.setSelected(getAutoStartValue() != 0);
         autoStartCheck.selectedProperty().addListener((observableValue, aBoolean, t1) -> warningLabel.setVisible(t1));
         warningLabel.setVisible(autoStartCheck.isSelected());
     }
@@ -75,11 +75,11 @@ public class SettingController implements Initializable {
 
     @FXML
     public void applySetting() {
-        putData("moveTime", moveTimeBox.getValue());
-        putData("vanishTime", vanishTimeBox.getValue());
-        putData("startVolume", (int)startVolumeSlider.getValue());
-        putData("opacity", (int)(opacitySlider.getValue() * 10));
-        putData("autoStart", autoStartCheck.isSelected() ? 1 : 0);
+        putMoveTimeValue(moveTimeBox.getValue());
+        putVanishTimeValue(vanishTimeBox.getValue());
+        putStartVolumeValue((int) startVolumeSlider.getValue());
+        putOpacityValue((int) (opacitySlider.getValue() * 10));
+        putAutoStartValue(autoStartCheck.isSelected() ? 1 : 0);
 
         saveSettingsOnFile();
     }

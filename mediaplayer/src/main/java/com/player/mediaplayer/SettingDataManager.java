@@ -11,12 +11,44 @@ final public class SettingDataManager {
     private SettingDataManager() {
     }
 
-    public static void putData(String key, int val) {
-        DATA.put(key, val);
+    public static void putMoveTimeValue(int val) {
+        DATA.put("moveTime", val);
     }
 
-    public static int getData(String key) {
-        return DATA.get(key);
+    public static void putVanishTimeValue(int val) {
+        DATA.put("vanishTime", val);
+    }
+
+    public static void putStartVolumeValue(int val) {
+        DATA.put("startVolume", val);
+    }
+
+    public static void putOpacityValue(int val) {
+        DATA.put("opacity", val);
+    }
+
+    public static void putAutoStartValue(int val) {
+        DATA.put("autoStart", val);
+    }
+
+    public static int getMoveTimeValue() {
+        return DATA.get("moveTime");
+    }
+
+    public static int getVanishTimeValue() {
+        return DATA.get("vanishTime");
+    }
+
+    public static int getStartVolumeValue() {
+        return DATA.get("startVolume");
+    }
+
+    public static int getOpacityValue() {
+        return DATA.get("opacity");
+    }
+
+    public static int getAutoStartValue() {
+        return DATA.get("autoStart");
     }
 
     public static void loadSettingsFromFile() {

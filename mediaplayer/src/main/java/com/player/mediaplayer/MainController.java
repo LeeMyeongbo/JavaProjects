@@ -73,7 +73,7 @@ public class MainController implements Initializable {
         String regName = "MediaPlayer";
         String regValue = "\"" + Paths.get("").toAbsolutePath() + "\\MediaPlayer.exe\" /autorun";
 
-        if (getData("autoStart") == 1) {
+        if (getAutoStartValue() == 1) {
             registerStartProgramWhenNotRegistered(regPath, regName, regValue);
         } else {
             deleteStartProgramWhenRegistered(regPath, regName);
@@ -156,7 +156,7 @@ public class MainController implements Initializable {
     }
 
     private void setInitialVolume() {
-        sound = getData("startVolume");
+        sound = getStartVolumeValue();
         volumeBar.setValue(sound);
     }
 
@@ -208,9 +208,9 @@ public class MainController implements Initializable {
             @Override
             public void run() {
                 mouse_stop++;
-                if (mouse_stop == getData("vanishTime")) {
+                if (mouse_stop == getVanishTimeValue()) {
                     appArea.setCursor(Cursor.NONE);
-                    setComponentVisibility(1.0 - getData("opacity") / 10.0);
+                    setComponentVisibility(1.0 - getOpacityValue() / 10.0);
                 }
             }
         };
@@ -321,7 +321,7 @@ public class MainController implements Initializable {
     public void onMouseExited() {
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
-            setComponentVisibility(1.0 - getData("opacity") / 10.0);
+            setComponentVisibility(1.0 - getOpacityValue() / 10.0);
     }
     @FXML
     public void onMouseDoubleClick(MouseEvent mouseEvent) {
@@ -389,7 +389,7 @@ public class MainController implements Initializable {
     @FXML
     public void onMouseForwardButtonEntered() {
         isForwardButtonMouseOn = true;
-        tooltip.setText("앞으로 " + getData("moveTime") + "초 이동");
+        tooltip.setText("앞으로 " + getMoveTimeValue() + "초 이동");
         Tooltip.install(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward-moused.png")));
     }
@@ -408,7 +408,7 @@ public class MainController implements Initializable {
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward-moused.png")));
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
-            double time = player.getCurrentTime().toSeconds() + getData("moveTime");
+            double time = player.getCurrentTime().toSeconds() + getMoveTimeValue();
             player.seek(Duration.seconds(time));
             playBar.setValue(time / player.getTotalDuration().toSeconds());
             curTimeLabel.setText(getTime(player.getCurrentTime()));
@@ -418,7 +418,7 @@ public class MainController implements Initializable {
     @FXML
     public void onMouseBackButtonEntered() {
         isBackwardButtonMouseOn = true;
-        tooltip.setText("뒤로 " + getData("moveTime") + "초 이동");
+        tooltip.setText("뒤로 " + getMoveTimeValue() + "초 이동");
         Tooltip.install(backButton.getParent(), tooltip);
         backButton.setImage(new Image(getStreamBySource(getClass(), "back-moused.png")));
     }
@@ -437,7 +437,7 @@ public class MainController implements Initializable {
         backButton.setImage(new Image(getStreamBySource(getClass(), "back-moused.png")));
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null) {
-            double time = player.getCurrentTime().toSeconds() - getData("moveTime");
+            double time = player.getCurrentTime().toSeconds() - getMoveTimeValue();
             player.seek(Duration.seconds(time));
             playBar.setValue(time / player.getTotalDuration().toSeconds());
             curTimeLabel.setText(getTime(player.getCurrentTime()));

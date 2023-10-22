@@ -1,10 +1,7 @@
 package com.player.mediaplayer;
 
-import javafx.application.Application;
-
 import java.io.*;
 import java.net.URL;
-import java.util.Map;
 import java.util.Objects;
 
 public class Utils {
