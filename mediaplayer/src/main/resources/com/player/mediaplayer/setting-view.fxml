@@ -27,17 +27,17 @@
          <Cursor fx:constant="HAND" />
       </cursor>
    </Slider>
-   <Button layoutX="315.0" layoutY="356.0" mnemonicParsing="false" onAction="#saveSetting" prefHeight="30.0" prefWidth="75.0" text="확인">
+   <Button fx:id="okButton" layoutX="315.0" layoutY="356.0" mnemonicParsing="false" onAction="#saveSetting" prefHeight="30.0" prefWidth="75.0" text="확인">
       <cursor>
          <Cursor fx:constant="HAND" />
       </cursor>
    </Button>
-   <Button layoutX="400.0" layoutY="356.0" mnemonicParsing="false" onAction="#cancelSetting" prefHeight="30.0" prefWidth="75.0" text="취소">
+   <Button fx:id="cancelButton" layoutX="400.0" layoutY="356.0" mnemonicParsing="false" onAction="#cancelSetting" prefHeight="30.0" prefWidth="75.0" text="취소">
       <cursor>
          <Cursor fx:constant="HAND" />
       </cursor>
    </Button>
-   <Button layoutX="489.0" layoutY="356.0" mnemonicParsing="false" onAction="#applySetting" prefHeight="30.0" prefWidth="75.0" text="적용">
+   <Button fx:id="applyButton" layoutX="489.0" layoutY="356.0" mnemonicParsing="false" onAction="#applySetting" prefHeight="30.0" prefWidth="75.0" text="적용">
       <cursor>
          <Cursor fx:constant="HAND" />
       </cursor>

@@ -14,7 +14,7 @@ public class MainControllerTest extends ApplicationTest {
     @Override
     public void start(Stage stage) {
         MainApplication mainApplication = new MainApplication();
-        mainApplication.start(new Stage());
+        mainApplication.start(stage);
     }
 
     @After
