@@ -25,6 +25,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.net.URL;
@@ -51,6 +53,7 @@ public class MainController implements Initializable {
     @FXML private Slider playBar, volumeBar;
     @FXML private Text volumeText;
     @FXML private Label curTimeLabel, endTimeLabel;
+    private static final Logger LOG = LogManager.getLogger();
     
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -635,5 +638,6 @@ public class MainController implements Initializable {
         if (timer != null)
             timer.cancel();
         timer = null;
+        LOG.info("shutdown : MediaPlayer closed!!");
     }
 }

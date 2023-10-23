@@ -17,24 +17,24 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage stage) {
-        LOG.info("MediaPlayer started..");
+        LOG.info("start : MediaPlayer started..");
         FXMLLoader loader = new FXMLLoader(getResource(getClass(), "app-view.fxml"));
         Scene scene = createScene(loader);
         scene.getStylesheets().add(getResource(getClass(), "app-style.css").toString());
         MainController controller = loader.getController();
 
         setStage(stage, scene, controller);
-        LOG.info("MediaPlayer is being showed...");
+        LOG.info("start : MediaPlayer is being showed...");
         stage.show();
     }
 
     private Scene createScene(FXMLLoader loader) {
         try {
             Scene scene = new Scene(loader.load());
-            LOG.info("Scene is created successfully!!");
+            LOG.info("createScene : Scene is created successfully!!");
             return scene;
         } catch (IOException e) {
-            LOG.fatal("Scene is not created by this error : \n" + e.getMessage());
+            LOG.fatal("createScene : Scene is not created by this error : \n" + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -44,6 +44,7 @@ public class MainApplication extends Application {
         stage.setScene(scene);
         stage.setOnCloseRequest(e -> controller.shutdown());
         stage.getIcons().add(new Image(getResource(getClass(), "video_player_icon.png").toExternalForm()));
+        LOG.info("setStage : Scene is applied to MediaPlayer stage");
     }
 
     private void setStageBasicInfo(Stage stage) {
@@ -54,7 +55,7 @@ public class MainApplication extends Application {
         stage.setMinWidth(minWidth);
         stage.setMinHeight(minHeight);
 
-        LOG.info("MediaPlayer title : " + title + ", minWidth : " + minWidth + ", minHeight : " + minHeight);
+        LOG.info("setStageBasicInfo : MediaPlayer title : " + title + ", minWidth : " + minWidth + ", minHeight : " + minHeight);
     }
 
     public static void main(String[] args) {

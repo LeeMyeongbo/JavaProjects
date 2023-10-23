@@ -145,9 +145,10 @@ public class LoadSettingTest {
 
         @Override
         public void init() throws Exception {
+            LOG.info("init : initialize test before starting");
             File settingFile = new File("C:\\Mediaplayer\\setting.dat");
             if (settingFile.delete()) {
-                LOG.info("setting.dat removed successfully!");
+                LOG.info("init : setting.dat removed successfully!");
             }
             setAnswerData();
             super.init();
@@ -163,6 +164,7 @@ public class LoadSettingTest {
 
         @Test
         public void test() {
+            LOG.info("test : Test started..");
             clickOn("#settingButton");
 
             VerificationExecutor executor = new VerificationExecutor();
@@ -174,6 +176,7 @@ public class LoadSettingTest {
             executor.testAutoStartCheckboxAppearCorrectly(false);
 
             assert !Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, PATH, NAME);
+            LOG.info("test : Test succeeded!!");
         }
     }
 
@@ -182,6 +185,7 @@ public class LoadSettingTest {
 
         @Override
         public void init() throws Exception {
+            LOG.info("init : initialize test before starting");
             setRandomData();
             applyToSettingData();
             setAnswerData();
@@ -199,17 +203,18 @@ public class LoadSettingTest {
                 randomVanishTime = 3;
             }
             randomOpacity = new Random().nextInt(11);
-            LOG.info("moveTime : " + randomMoveTime + ", startVolume : " + randomStartVolume + ", vanishTime : " +
-                randomVanishTime + ", buttonOpacity : " + randomOpacity + ", autoStart : " + true);
+            LOG.info("setRandomData : moveTime : " + randomMoveTime + ", startVolume : " + randomStartVolume +
+                ", vanishTime : " + randomVanishTime + ", buttonOpacity : " + randomOpacity + ", autoStart : " + true);
         }
 
         private void applyToSettingData() {
             putMoveTimeValue(randomMoveTime);
-            putVanishTimeValue(randomVanishTime);
             putStartVolumeValue(randomStartVolume);
+            putVanishTimeValue(randomVanishTime);
             putOpacityValue(randomOpacity);
             putAutoStartValue(1);
             saveSettingsOnFile();
+            LOG.info("applyToSettingData : settings are applied successfully!!");
         }
 
         private void setAnswerData() {
@@ -222,6 +227,7 @@ public class LoadSettingTest {
 
         @Test
         public void test() {
+            LOG.info("test : Test started..");
             clickOn("#settingButton");
 
             VerificationExecutor executor = new VerificationExecutor();
@@ -235,6 +241,7 @@ public class LoadSettingTest {
 
             clickOn("#autoStartCheck").clickOn("#okButton");
             assert !Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, PATH, NAME);
+            LOG.info("test : Test succeeded!!");
         }
     }
 }

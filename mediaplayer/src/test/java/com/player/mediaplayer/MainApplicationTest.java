@@ -6,6 +6,8 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
 import org.testfx.api.FxToolkit;
@@ -18,9 +20,11 @@ import static org.testfx.api.FxAssert.verifyThat;
 
 public class MainApplicationTest extends ApplicationTest {
     private Stage testStage;
+    private static final Logger LOG = LogManager.getLogger();
 
     @Override
     public void start(Stage stage) {
+        LOG.info("start : MainApplicationTest started..");
         testStage = new Stage();
         new MainApplication().start(testStage);
     }
@@ -30,6 +34,7 @@ public class MainApplicationTest extends ApplicationTest {
         FxToolkit.hideStage();
         release(new KeyCode[]{});
         release(new MouseButton[]{});
+        LOG.info("teardown : MainApplicationTest ended..");
     }
 
     @Test
@@ -54,10 +59,11 @@ public class MainApplicationTest extends ApplicationTest {
         for (Image image : list) {
             if (Objects.equals(image.getUrl(), Objects.requireNonNull(
                 getClass().getResource("video_player_icon.png")).toExternalForm())) {
-                System.out.println("성공!");
+                LOG.info("testSetStage : MediaPlayer icon is applied correctly!!");
                 return;
             }
         }
-        throw new RuntimeException("실패!");
+        LOG.info("testSetStage : MediaPlayer icon is wrong!!");
+        throw new RuntimeException("failed : MediaPlayer icon is wrong!!");
     }
 }
