@@ -18,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
@@ -98,23 +99,23 @@ public class MainController implements Initializable {
     }
 
     private void enableMediaReadyByDragAndDrop() {
-        mediaArea.setOnDragOver(e -> {
-            System.out.println("dragOver");
+        LOG.info("enableMediaReadyByDragAndDrop : drag and drop enabled!");
+        bgArea.setOnDragOver(e -> {
             if (e.getDragboard().hasFiles())
-                e.acceptTransferModes(TransferMode.ANY);
+                e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
             e.consume();
         });
     }
 
     private void enableMediaPlayAfterDragAndDrop() {
-        mediaArea.setOnDragDropped(e -> {
-            System.out.println("dragDropped");
+        bgArea.setOnDragDropped(e -> {
             Dragboard db = e.getDragboard();
             boolean success = false;
 
             if (db.hasFiles()) {
                 success = true;
-                setupMedia(db.getFiles().get(0));
+                File mediaFile = db.getFiles().get(0);
+                setupMedia(mediaFile);
             }
             e.setDropCompleted(success);
             e.consume();
@@ -220,15 +221,6 @@ public class MainController implements Initializable {
         timer.scheduleAtFixedRate(task, 0, 1000);
     }
 
-    private void errorDialog() {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("형식 오류!");
-        dialog.setWidth(400);
-        dialog.setHeight(300);
-        dialog.showAndWait();
-    }
-
     private void setComponentVisibility(double v) {
         buttonArea.setOpacity(v);
         volumeArea.setOpacity(v);
@@ -246,7 +238,14 @@ public class MainController implements Initializable {
     private void setupMedia(File file) {
         try {
             disposePriorMedia();
-            MediaPlayer player = new MediaPlayer(new Media(file.toURI().toString()));
+            String source = file.toURI().toString();
+            LOG.info("setupMedia : media source = " + source);
+            if (!isSupportedMedia(source)) {
+                LOG.error("setupMedia : this media is not supported!");
+                showErrorDialog();
+                return;
+            }
+            MediaPlayer player = new MediaPlayer(new Media(source));
             player.setOnReady(() -> {
                 setMediaReadyToPlay(player);
                 if (!isFinding)
@@ -256,10 +255,8 @@ public class MainController implements Initializable {
             player.setOnEndOfMedia(() -> setMediaReadyToPlay(player));
             player.setVolume(sound / 100.0);
             prepareInitialPlaying(player);
-        } catch (NullPointerException ignored) {
-            System.out.println("추가된 파일이 없습니다.");
         } catch (Exception e) {
-            errorDialog();
+            LOG.error("setupMedia : Unexpected exception : " + e.getMessage());
         }
     }
 
@@ -269,6 +266,20 @@ public class MainController implements Initializable {
             exMediaPlayer.stop();
             exMediaPlayer.dispose();
         }
+    }
+
+    private boolean isSupportedMedia(String source) {
+        String ext = source.substring(source.lastIndexOf(".") + 1);
+        return ext.equals("mp3") || ext.equals("mp4") || ext.equals("m4a") || ext.equals("m4v") || ext.equals("wav");
+    }
+
+    private void showErrorDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("형식 오류!");
+        dialog.setWidth(400);
+        dialog.setHeight(300);
+        dialog.showAndWait();
     }
 
     private void setMediaReadyToPlay(MediaPlayer player) {
@@ -535,7 +546,11 @@ public class MainController implements Initializable {
         fileChooser.setTitle("비디오 선택");
         fileChooser.setInitialDirectory(new File("C:/"));
         File file = fileChooser.showOpenDialog(null);
-        setupMedia(file);
+        if (file != null) {
+            setupMedia(file);
+        } else {
+            LOG.info("onMouseFileButtonReleased : file was not double-clicked or Open button was not clicked!");
+        }
     }
 
     @FXML
