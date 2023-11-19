@@ -18,7 +18,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
-import javafx.scene.media.MediaException;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
@@ -40,7 +39,7 @@ import static com.player.mediaplayer.Utils.*;
 public class MainController implements Initializable {
     private final String PLAYBAR_STYLE = "-fx-background-color: linear-gradient(to right, #0303f2 %f%%, #15ff00 %f%%);" +
         "\n-fx-pref-height: %d;";
-    private boolean isRepeating, isFinding, isFullScreen, isPlaying;
+    private boolean isRepeating, isFinding, isPlaying;
     private boolean isPlayBarMouseOn, isPlayButtonMouseOn, isForwardButtonMouseOn, isBackwardButtonMouseOn, isFileButtonMouseOn;
     private int mouse_stop;
     private double sound;
@@ -60,9 +59,6 @@ public class MainController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         loadSettingsFromFile();
         manageStartProgramRegistration();
-        enableMediaReadyByDragAndDrop();
-        enableMediaPlayAfterDragAndDrop();
-        enableMediaControlWithKeyboard();
         setInitialVolume();
         setVolumeBarEvent();
         setPlayBarEvent();
@@ -88,6 +84,7 @@ public class MainController implements Initializable {
         if (!Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {
             Advapi32Util.registryCreateKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
             Advapi32Util.registrySetStringValue(WinReg.HKEY_CURRENT_USER, regPath, regName, regValue);
+            LOG.info("registerStartProgramWhenNotRegistered : registered at start program!");
         }
     }
 
@@ -95,68 +92,16 @@ public class MainController implements Initializable {
         if (Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, regPath, regName)) {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, regPath, regName);
             Advapi32Util.registryDeleteKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
+            LOG.info("deleteStartProgramWhenRegistered : deleted from start program!");
         }
     }
 
-    private void enableMediaReadyByDragAndDrop() {
-        LOG.info("enableMediaReadyByDragAndDrop : drag and drop enabled!");
-        bgArea.setOnDragOver(e -> {
-            if (e.getDragboard().hasFiles())
-                e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            e.consume();
-        });
-    }
-
-    private void enableMediaPlayAfterDragAndDrop() {
-        bgArea.setOnDragDropped(e -> {
-            Dragboard db = e.getDragboard();
-            boolean success = false;
-
-            if (db.hasFiles()) {
-                success = true;
-                File mediaFile = db.getFiles().get(0);
-                setupMedia(mediaFile);
-            }
-            e.setDropCompleted(success);
-            e.consume();
-        });
-    }
-
-    private void enableMediaControlWithKeyboard() {
-        appArea.setOnKeyReleased(keyEvent -> {
-            switch (keyEvent.getCode()) {
-                case SPACE -> {
-                    if (mediaArea.getMediaPlayer() == null) {
-                        onMouseFileButtonReleased();
-                        if (!isFileButtonMouseOn)
-                            onMouseFileButtonExited();
-                    } else {
-                        onMousePlayButtonReleased();
-                        if (!isPlayButtonMouseOn)
-                            modifyPlayButton();
-                    }
-                } case RIGHT -> {
-                    onMouseForwardButtonReleased();
-                    if (!isForwardButtonMouseOn)
-                        onMouseForwardButtonExited();
-                } case LEFT -> {
-                    onMouseBackButtonReleased();
-                    if (!isBackwardButtonMouseOn)
-                        onMouseBackButtonExited();
-                } case ENTER -> {
-                    isFullScreen = !isFullScreen;
-                    ((Stage)mediaArea.getScene().getWindow()).setFullScreenExitHint("");
-                    ((Stage)mediaArea.getScene().getWindow()).setFullScreen(isFullScreen);
-                }
-            }
-        });
-    }
-
     private void modifyPlayButton() {
-        if (mediaArea.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING)
+        if (mediaArea.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING) {
             playButton.setImage(new Image(getStreamBySource(getClass(), "play.png")));
-        else
+        } else {
             playButton.setImage(new Image(getStreamBySource(getClass(), "pause.png")));
+        }
     }
 
     private void setInitialVolume() {
@@ -183,10 +128,11 @@ public class MainController implements Initializable {
     private void setPlayBarEvent() {
         playBar.setOnMouseDragged(e -> findPosition());
         playBar.valueProperty().addListener((observableValue, number, t1) -> {
-            if (isPlayBarMouseOn)
+            if (isPlayBarMouseOn) {
                 playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, t1.doubleValue() * 100, t1.doubleValue() * 100, 8));
-            else
+            } else {
                 playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, t1.doubleValue() * 100, t1.doubleValue() * 100, 2));
+            }
         });
         playBar.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);
     }
@@ -199,10 +145,11 @@ public class MainController implements Initializable {
     }
 
     private void setInitialVolumeButton() {
-        if (sound > 0)
+        if (sound > 0) {
             volumeButton.setImage(new Image(getStreamBySource(getClass(), "volume.png")));
-        else
+        } else {
             volumeButton.setImage(new Image(getStreamBySource(getClass(), "mute.png")));
+        }
     }
 
     private void startTask() {
@@ -221,18 +168,19 @@ public class MainController implements Initializable {
         timer.scheduleAtFixedRate(task, 0, 1000);
     }
 
-    private void setComponentVisibility(double v) {
-        buttonArea.setOpacity(v);
-        volumeArea.setOpacity(v);
-        etcArea.setOpacity(v);
-        playBar.setOpacity(v);
-        curTimeLabel.setOpacity(v);
-        endTimeLabel.setOpacity(v);
+    private void setComponentVisibility(double value) {
+        buttonArea.setOpacity(value);
+        volumeArea.setOpacity(value);
+        etcArea.setOpacity(value);
+        playBar.setOpacity(value);
+        curTimeLabel.setOpacity(value);
+        endTimeLabel.setOpacity(value);
 
-        if (v < 1.0)
+        if (value < 1.0) {
             bgArea.setStyle("-fx-background-color: transparent;");
-        else
+        } else {
             bgArea.setStyle("-fx-background-color: linear-gradient(to top, rgba(18, 8, 65, 0.65) 20%, transparent);");
+        }
     }
 
     private void setupMedia(File file) {
@@ -326,6 +274,41 @@ public class MainController implements Initializable {
     }
 
     @FXML
+    public void onKeyReleased(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()) {
+            case SPACE -> {
+                LOG.info("onKeyReleased : space bar key input");
+                if (mediaArea.getMediaPlayer() == null) {
+                    onMouseFileButtonReleased();
+                    if (!isFileButtonMouseOn) {
+                        onMouseFileButtonExited();
+                    }
+                } else {
+                    onMousePlayButtonReleased();
+                    if (!isPlayButtonMouseOn) {
+                        modifyPlayButton();
+                    }
+                }
+            } case RIGHT -> {
+                LOG.info("onKeyReleased : right key input");
+                onMouseForwardButtonReleased();
+                if (!isForwardButtonMouseOn) {
+                    onMouseForwardButtonExited();
+                }
+            } case LEFT -> {
+                LOG.info("onKeyReleased : left key input");
+                onMouseBackButtonReleased();
+                if (!isBackwardButtonMouseOn) {
+                    onMouseBackButtonExited();
+                }
+            } case ENTER -> {
+                LOG.info("onKeyReleased : enter key input");
+                setFullScreenOrNot();
+            }
+        }
+    }
+
+    @FXML
     public void onMouseMoved() {
         setComponentVisibility(1.0);
         appArea.setCursor(Cursor.DEFAULT);
@@ -340,10 +323,39 @@ public class MainController implements Initializable {
     @FXML
     public void onMouseDoubleClick(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
-            isFullScreen = !isFullScreen;
-            ((Stage)mediaArea.getScene().getWindow()).setFullScreenExitHint("");
-            ((Stage)mediaArea.getScene().getWindow()).setFullScreen(isFullScreen);
+            LOG.info("onMouseDoubleClick : mouse double clicked");
+            setFullScreenOrNot();
         }
+    }
+
+    private void setFullScreenOrNot() {
+        Stage curStage = ((Stage) mediaArea.getScene().getWindow());
+        boolean isFullScreen = curStage.isFullScreen();
+        curStage.setFullScreenExitHint("");
+        curStage.setFullScreen(!isFullScreen);
+        LOG.info("onKeyReleased : fullScreenMode : " + !isFullScreen);
+    }
+
+    @FXML
+    public void onMouseDragOver(DragEvent e) {
+        if (e.getDragboard().hasFiles()) {
+            e.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+        }
+        e.consume();
+    }
+    @FXML
+    public void onMouseDragDropped(DragEvent e) {
+        Dragboard db = e.getDragboard();
+        boolean success = false;
+
+        if (db.hasFiles()) {
+            LOG.info("onMouseDragDropped : file set ready to play..");
+            success = true;
+            File mediaFile = db.getFiles().get(0);
+            setupMedia(mediaFile);
+        }
+        e.setDropCompleted(success);
+        e.consume();
     }
 
     @FXML
