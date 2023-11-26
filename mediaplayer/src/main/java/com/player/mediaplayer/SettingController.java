@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 import static com.player.mediaplayer.SettingDataManager.*;
 
 public class SettingController implements Initializable {
-    @FXML private AnchorPane pane;
+    @FXML private AnchorPane settingArea;
     @FXML private CheckBox autoStartCheck;
     @FXML private Label startVolumeLabel, opacityLabel, warningLabel;
     @FXML private Slider startVolumeSlider, opacitySlider;
@@ -85,7 +85,7 @@ public class SettingController implements Initializable {
     }
 
     public void close() {
-        Stage stage = (Stage) pane.getScene().getWindow();
+        Stage stage = (Stage) settingArea.getScene().getWindow();
         stage.close();
     }
 }

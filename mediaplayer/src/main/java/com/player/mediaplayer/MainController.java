@@ -22,7 +22,6 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
@@ -93,14 +92,6 @@ public class MainController implements Initializable {
             Advapi32Util.registryDeleteValue(WinReg.HKEY_CURRENT_USER, regPath, regName);
             Advapi32Util.registryDeleteKey(WinReg.HKEY_CURRENT_USER, regPath, regName);
             LOG.info("deleteStartProgramWhenRegistered : deleted from start program!");
-        }
-    }
-
-    private void modifyPlayButton() {
-        if (mediaArea.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING) {
-            playButton.setImage(new Image(getStreamBySource(getClass(), "play.png")));
-        } else {
-            playButton.setImage(new Image(getStreamBySource(getClass(), "pause.png")));
         }
     }
 
@@ -225,12 +216,7 @@ public class MainController implements Initializable {
     }
 
     private void showErrorDialog() {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("형식 오류!");
-        dialog.setWidth(400);
-        dialog.setHeight(300);
-        dialog.showAndWait();
+        new ErrorApplication().start(new Stage());
     }
 
     private void setMediaReadyToPlay(MediaPlayer player) {
@@ -275,6 +261,14 @@ public class MainController implements Initializable {
 
     private String getTime(Duration d) {
         return String.format("%02d:%02d:%02d", (int)d.toHours(), (int)d.toMinutes() % 60, (int)d.toSeconds() % 60);
+    }
+
+    private void modifyPlayButton() {
+        if (mediaArea.getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING) {
+            playButton.setImage(new Image(getStreamBySource(getClass(), "play.png")));
+        } else {
+            playButton.setImage(new Image(getStreamBySource(getClass(), "pause.png")));
+        }
     }
 
     private void setFullScreenOrNot() {
