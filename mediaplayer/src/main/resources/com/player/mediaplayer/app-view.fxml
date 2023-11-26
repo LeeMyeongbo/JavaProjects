@@ -11,7 +11,7 @@
 
 <StackPane id="appArea" fx:id="appArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" onKeyReleased="#onKeyReleased" onMouseClicked="#onMouseDoubleClick" onMouseExited="#onMouseExited" onMouseMoved="#onMouseMoved" prefHeight="650.0" prefWidth="850.0" stylesheets="@app-style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.player.mediaplayer.MainController">
    <MediaView fx:id="mediaArea" fitHeight="650.0" fitWidth="850.0" StackPane.alignment="CENTER" />
-   <VBox id="bgArea" fx:id="bgArea" alignment="BOTTOM_CENTER" onDragDropped="#onMouseDragDropped" onDragOver="#onMouseDragOver" prefHeight="200.0" prefWidth="100.0">
+   <VBox id="bgArea" fx:id="backgroundArea" alignment="BOTTOM_CENTER" onDragDropped="#onMouseDragDropped" onDragOver="#onMouseDragOver" prefHeight="200.0" prefWidth="100.0">
       <AnchorPane>
          <Label fx:id="curTimeLabel" text="00:00:00" textFill="WHITE" AnchorPane.leftAnchor="15.0">
             <font>

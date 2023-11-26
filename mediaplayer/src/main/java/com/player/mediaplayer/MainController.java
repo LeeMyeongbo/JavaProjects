@@ -40,8 +40,8 @@ public class MainController implements Initializable {
     private final String PLAYBAR_STYLE = "-fx-background-color: linear-gradient(to right, #0303f2 %f%%, #15ff00 %f%%);" +
         "\n-fx-pref-height: %d;";
     private boolean isRepeating, isFinding, isPlaying;
-    private boolean isPlayBarMouseOn, isPlayButtonMouseOn, isForwardButtonMouseOn, isBackwardButtonMouseOn, isFileButtonMouseOn;
-    private int mouse_stop;
+    private boolean isMouseOnPlayBar, isMouseOnPlayButton, isMouseOnForwardButton, isMouseOnBackwardButton, isMouseOnFileButton;
+    private int mouseStopCount;
     private double sound;
     private Timer timer;
     private Tooltip tooltip;
@@ -49,7 +49,7 @@ public class MainController implements Initializable {
     @FXML private ImageView playButton, backButton, forwardButton, oneButton, repeatButton, volumeButton, fileButton, settingButton;
     @FXML private MediaView mediaArea;
     @FXML private HBox buttonArea, volumeArea, etcArea;
-    @FXML private VBox bgArea;
+    @FXML private VBox backgroundArea;
     @FXML private Slider playBar, volumeBar;
     @FXML private Text volumeText;
     @FXML private Label curTimeLabel, endTimeLabel;
@@ -113,14 +113,16 @@ public class MainController implements Initializable {
         volumeBar.valueProperty().addListener((observableValue, number, t1) -> {
             onMouseMoved();
             volumeText.setText(Integer.toString(t1.intValue()));
-            if (t1.intValue() == 0)
+            if (t1.intValue() == 0) {
                 volumeButton.setImage(new Image(getStreamBySource(getClass(), "mute.png")));
-            else
+            } else {
                 volumeButton.setImage(new Image(getStreamBySource(getClass(), "volume.png")));
+            }
 
             MediaPlayer player = mediaArea.getMediaPlayer();
-            if (player != null)
+            if (player != null) {
                 player.setVolume(t1.intValue() / 100.0);
+            }
         });
         volumeBar.addEventFilter(KeyEvent.KEY_PRESSED, Event::consume);
     }
@@ -128,7 +130,7 @@ public class MainController implements Initializable {
     private void setPlayBarEvent() {
         playBar.setOnMouseDragged(e -> findPosition());
         playBar.valueProperty().addListener((observableValue, number, t1) -> {
-            if (isPlayBarMouseOn) {
+            if (isMouseOnPlayBar) {
                 playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, t1.doubleValue() * 100, t1.doubleValue() * 100, 8));
             } else {
                 playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, t1.doubleValue() * 100, t1.doubleValue() * 100, 2));
@@ -154,12 +156,12 @@ public class MainController implements Initializable {
 
     private void startTask() {
         timer = new Timer();
-        mouse_stop = 0;
+        mouseStopCount = 0;
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                mouse_stop++;
-                if (mouse_stop == getVanishTimeValue()) {
+                mouseStopCount++;
+                if (mouseStopCount == getVanishTimeValue()) {
                     appArea.setCursor(Cursor.NONE);
                     setComponentVisibility(1.0 - getOpacityValue() / 10.0);
                 }
@@ -177,9 +179,9 @@ public class MainController implements Initializable {
         endTimeLabel.setOpacity(value);
 
         if (value < 1.0) {
-            bgArea.setStyle("-fx-background-color: transparent;");
+            backgroundArea.setStyle("-fx-background-color: transparent;");
         } else {
-            bgArea.setStyle("-fx-background-color: linear-gradient(to top, rgba(18, 8, 65, 0.65) 20%, transparent);");
+            backgroundArea.setStyle("-fx-background-color: linear-gradient(to top, rgba(18, 8, 65, 0.65) 20%, transparent);");
         }
     }
 
@@ -196,8 +198,9 @@ public class MainController implements Initializable {
             MediaPlayer player = new MediaPlayer(new Media(source));
             player.setOnReady(() -> {
                 setMediaReadyToPlay(player);
-                if (!isFinding)
-                    updatePlayBarInRealTime(player);
+                if (!isFinding) {
+                    setPlayBarUpdatedRealTime(player);
+                }
                 endTimeLabel.setText(getTime(player.getTotalDuration()));
             });
             player.setOnEndOfMedia(() -> setMediaReadyToPlay(player));
@@ -238,13 +241,14 @@ public class MainController implements Initializable {
         playBar.setValue(0.0);
         curTimeLabel.setText("00:00:00");
         isPlaying = isRepeating;
-        if (timer != null)
+        if (timer != null) {
             timer.cancel();
+        }
         timer = null;
         setComponentVisibility(1.0);
     }
 
-    private void updatePlayBarInRealTime(MediaPlayer player) {
+    private void setPlayBarUpdatedRealTime(MediaPlayer player) {
         player.currentTimeProperty().addListener((observableValue, duration, t1) -> {
             double progress = player.getCurrentTime().toSeconds() / player.getTotalDuration().toSeconds();
             playBar.setValue(progress);
@@ -273,6 +277,14 @@ public class MainController implements Initializable {
         return String.format("%02d:%02d:%02d", (int)d.toHours(), (int)d.toMinutes() % 60, (int)d.toSeconds() % 60);
     }
 
+    private void setFullScreenOrNot() {
+        Stage curStage = ((Stage) mediaArea.getScene().getWindow());
+        boolean isFullScreen = curStage.isFullScreen();
+        curStage.setFullScreenExitHint("");
+        curStage.setFullScreen(!isFullScreen);
+        LOG.info("onKeyReleased : fullScreenMode : " + !isFullScreen);
+    }
+
     @FXML
     public void onKeyReleased(KeyEvent keyEvent) {
         switch (keyEvent.getCode()) {
@@ -280,25 +292,25 @@ public class MainController implements Initializable {
                 LOG.info("onKeyReleased : space bar key input");
                 if (mediaArea.getMediaPlayer() == null) {
                     onMouseFileButtonReleased();
-                    if (!isFileButtonMouseOn) {
+                    if (!isMouseOnFileButton) {
                         onMouseFileButtonExited();
                     }
                 } else {
                     onMousePlayButtonReleased();
-                    if (!isPlayButtonMouseOn) {
+                    if (!isMouseOnPlayButton) {
                         modifyPlayButton();
                     }
                 }
             } case RIGHT -> {
                 LOG.info("onKeyReleased : right key input");
                 onMouseForwardButtonReleased();
-                if (!isForwardButtonMouseOn) {
+                if (!isMouseOnForwardButton) {
                     onMouseForwardButtonExited();
                 }
             } case LEFT -> {
                 LOG.info("onKeyReleased : left key input");
                 onMouseBackButtonReleased();
-                if (!isBackwardButtonMouseOn) {
+                if (!isMouseOnBackwardButton) {
                     onMouseBackButtonExited();
                 }
             } case ENTER -> {
@@ -312,28 +324,23 @@ public class MainController implements Initializable {
     public void onMouseMoved() {
         setComponentVisibility(1.0);
         appArea.setCursor(Cursor.DEFAULT);
-        mouse_stop = 0;
+        mouseStopCount = 0;
     }
+
     @FXML
     public void onMouseExited() {
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
+        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING) {
             setComponentVisibility(1.0 - getOpacityValue() / 10.0);
+        }
     }
+
     @FXML
     public void onMouseDoubleClick(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
             LOG.info("onMouseDoubleClick : mouse double clicked");
             setFullScreenOrNot();
         }
-    }
-
-    private void setFullScreenOrNot() {
-        Stage curStage = ((Stage) mediaArea.getScene().getWindow());
-        boolean isFullScreen = curStage.isFullScreen();
-        curStage.setFullScreenExitHint("");
-        curStage.setFullScreen(!isFullScreen);
-        LOG.info("onKeyReleased : fullScreenMode : " + !isFullScreen);
     }
 
     @FXML
@@ -343,6 +350,7 @@ public class MainController implements Initializable {
         }
         e.consume();
     }
+
     @FXML
     public void onMouseDragDropped(DragEvent e) {
         Dragboard db = e.getDragboard();
@@ -360,7 +368,7 @@ public class MainController implements Initializable {
 
     @FXML
     public void onMousePlayButtonEntered() {
-        isPlayButtonMouseOn = true;
+        isMouseOnPlayButton = true;
         MediaPlayer player = mediaArea.getMediaPlayer();
         if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING) {
             playButton.setImage(new Image(getStreamBySource(getClass(), "pause-moused.png")));
@@ -371,24 +379,29 @@ public class MainController implements Initializable {
         }
         Tooltip.install(playButton.getParent(), tooltip);
     }
+
     @FXML
     public void onMousePlayButtonExited() {
-        isPlayButtonMouseOn = false;
+        isMouseOnPlayButton = false;
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
+        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING) {
             playButton.setImage(new Image(getStreamBySource(getClass(), "pause.png")));
-        else
+        } else {
             playButton.setImage(new Image(getStreamBySource(getClass(), "play.png")));
+        }
         Tooltip.uninstall(playButton.getParent(), tooltip);
     }
+
     @FXML
     public void onMousePlayButtonPressed() {
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING)
+        if (player != null && player.getStatus() == MediaPlayer.Status.PLAYING) {
             playButton.setImage(new Image(getStreamBySource(getClass(), "pause-pressed.png")));
-        else
+        } else {
             playButton.setImage(new Image(getStreamBySource(getClass(), "play-pressed.png")));
+        }
     }
+
     @FXML
     public void onMousePlayButtonReleased() {
         MediaPlayer player = mediaArea.getMediaPlayer();
@@ -414,21 +427,24 @@ public class MainController implements Initializable {
 
     @FXML
     public void onMouseForwardButtonEntered() {
-        isForwardButtonMouseOn = true;
+        isMouseOnForwardButton = true;
         tooltip.setText("앞으로 " + getMoveTimeValue() + "초 이동");
         Tooltip.install(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward-moused.png")));
     }
+
     @FXML
     public void onMouseForwardButtonExited() {
-        isForwardButtonMouseOn = false;
+        isMouseOnForwardButton = false;
         Tooltip.uninstall(forwardButton.getParent(), tooltip);
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward.png")));
     }
+
     @FXML
     public void onMouseForwardButtonPressed() {
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward-pressed.png")));
     }
+
     @FXML
     public void onMouseForwardButtonReleased() {
         forwardButton.setImage(new Image(getStreamBySource(getClass(), "forward-moused.png")));
@@ -443,21 +459,24 @@ public class MainController implements Initializable {
 
     @FXML
     public void onMouseBackButtonEntered() {
-        isBackwardButtonMouseOn = true;
+        isMouseOnBackwardButton = true;
         tooltip.setText("뒤로 " + getMoveTimeValue() + "초 이동");
         Tooltip.install(backButton.getParent(), tooltip);
         backButton.setImage(new Image(getStreamBySource(getClass(), "back-moused.png")));
     }
+
     @FXML
     public void onMouseBackButtonExited() {
-        isBackwardButtonMouseOn = false;
+        isMouseOnBackwardButton = false;
         Tooltip.uninstall(backButton.getParent(), tooltip);
         backButton.setImage(new Image(getStreamBySource(getClass(), "back.png")));
     }
+
     @FXML
     public void onMouseBackButtonPressed() {
         backButton.setImage(new Image(getStreamBySource(getClass(), "back-pressed.png")));
     }
+
     @FXML
     public void onMouseBackButtonReleased() {
         backButton.setImage(new Image(getStreamBySource(getClass(), "back-moused.png")));
@@ -476,19 +495,23 @@ public class MainController implements Initializable {
         Tooltip.install(oneButton.getParent(), tooltip);
         oneButton.setImage(new Image(getStreamBySource(getClass(), "one-moused.png")));
     }
+
     @FXML
     public void onMouseOneButtonExited() {
         Tooltip.uninstall(oneButton.getParent(), tooltip);
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null && !isRepeating)
+        if (player != null && !isRepeating) {
             oneButton.setImage(new Image(getStreamBySource(getClass(), "one-selected.png")));
-        else
+        } else {
             oneButton.setImage(new Image(getStreamBySource(getClass(), "one.png")));
+        }
     }
+
     @FXML
     public void onMouseOneButtonPressed() {
         oneButton.setImage(new Image(getStreamBySource(getClass(), "one-selected.png")));
     }
+
     @FXML
     public void onMouseOneButtonReleased() {
         MediaPlayer player = mediaArea.getMediaPlayer();
@@ -497,9 +520,9 @@ public class MainController implements Initializable {
             repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat.png")));
             oneButton.setImage(new Image(getStreamBySource(getClass(), "one-selected.png")));
             player.setOnEndOfMedia(() -> setMediaReadyToPlay(player));
-        }
-        else
+        } else {
             oneButton.setImage(new Image(getStreamBySource(getClass(), "one-moused.png")));
+        }
     }
 
     @FXML
@@ -508,19 +531,23 @@ public class MainController implements Initializable {
         Tooltip.install(repeatButton.getParent(), tooltip);
         repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat-moused.png")));
     }
+
     @FXML
     public void onMouseRepeatButtonExited() {
         Tooltip.uninstall(repeatButton.getParent(), tooltip);
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null && isRepeating)
+        if (player != null && isRepeating) {
             repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat-selected.png")));
-        else
+        } else {
             repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat.png")));
+        }
     }
+
     @FXML
     public void onMouseRepeatButtonPressed() {
         repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat-selected.png")));
     }
+
     @FXML
     public void onMouseRepeatButtonReleased() {
         MediaPlayer player = mediaArea.getMediaPlayer();
@@ -529,28 +556,31 @@ public class MainController implements Initializable {
             repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat-selected.png")));
             oneButton.setImage(new Image(getStreamBySource(getClass(), "one.png")));
             player.setOnEndOfMedia(() -> player.seek(Duration.ZERO));
-        }
-        else
+        } else {
             repeatButton.setImage(new Image(getStreamBySource(getClass(), "repeat-moused.png")));
+        }
     }
 
     @FXML
     public void onMouseFileButtonEntered() {
-        isFileButtonMouseOn = true;
+        isMouseOnFileButton = true;
         tooltip.setText("동영상 추가");
         Tooltip.install(fileButton.getParent(), tooltip);
         fileButton.setImage(new Image(getStreamBySource(getClass(), "folder-moused.png")));
     }
+
     @FXML
     public void onMouseFileButtonExited() {
-        isFileButtonMouseOn = false;
+        isMouseOnFileButton = false;
         Tooltip.uninstall(fileButton.getParent(), tooltip);
         fileButton.setImage(new Image(getStreamBySource(getClass(), "folder.png")));
     }
+
     @FXML
     public void onMouseFileButtonPressed() {
         fileButton.setImage(new Image(getStreamBySource(getClass(), "folder-pressed.png")));
     }
+
     @FXML
     public void onMouseFileButtonReleased() {
         fileButton.setImage(new Image(getStreamBySource(getClass(), "folder-moused.png")));
@@ -571,15 +601,18 @@ public class MainController implements Initializable {
         Tooltip.install(settingButton.getParent(), tooltip);
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting-moused.png")));
     }
+
     @FXML
     public void onMouseSettingButtonExited() {
         Tooltip.uninstall(settingButton.getParent(), tooltip);
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting.png")));
     }
+
     @FXML
     public void onMouseSettingButtonPressed() {
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting-pressed.png")));
     }
+
     @FXML
     public void onMouseSettingButtonReleased() {
         settingButton.setImage(new Image(getStreamBySource(getClass(), "setting-moused.png")));
@@ -598,18 +631,22 @@ public class MainController implements Initializable {
         }
         Tooltip.install(volumeButton.getParent(), tooltip);
     }
+
     @FXML
     public void onMouseVolumeButtonExited() {
         setInitialVolumeButton();
         Tooltip.uninstall(volumeButton.getParent(), tooltip);
     }
+
     @FXML
     public void onMouseVolumeButtonPressed() {
-        if (sound > 0)
+        if (sound > 0) {
             volumeButton.setImage(new Image(getStreamBySource(getClass(), "volume-pressed.png")));
-        else
+        } else {
             volumeButton.setImage(new Image(getStreamBySource(getClass(), "mute-pressed.png")));
+        }
     }
+
     @FXML
     public void onMouseVolumeButtonReleased() {
         if (Double.compare(sound, 0.0) == 0) {
@@ -624,8 +661,9 @@ public class MainController implements Initializable {
         volumeBar.setValue(sound);
 
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null)
+        if (player != null) {
             player.setVolume(sound / 100);
+        }
     }
 
     @FXML
@@ -633,6 +671,7 @@ public class MainController implements Initializable {
         volumeText.setText(String.valueOf((int)volumeBar.getValue()));
         volumeText.setVisible(true);
     }
+
     @FXML
     public void onMouseVolumeBarExited() {
         volumeText.setVisible(false);
@@ -640,30 +679,35 @@ public class MainController implements Initializable {
 
     @FXML
     public void onMousePlayBarEntered() {
-        isPlayBarMouseOn = true;
+        isMouseOnPlayBar = true;
         playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, playBar.getValue() * 100, playBar.getValue() * 100, 8));
     }
+
     @FXML
     public void onMousePlayBarExited() {
-        isPlayBarMouseOn = false;
+        isMouseOnPlayBar = false;
         playBar.lookup(".track").setStyle(String.format(PLAYBAR_STYLE, playBar.getValue() * 100, playBar.getValue() * 100, 2));
     }
+
     @FXML
     public void onMousePlayBarPressed() {
         isFinding = true;
         findPosition();
     }
+
     @FXML
     public void onMousePlayBarReleased() {
         isFinding = false;
         MediaPlayer player = mediaArea.getMediaPlayer();
-        if (player != null && isPlaying)
+        if (player != null && isPlaying) {
             player.play();
+        }
     }
 
     public void shutdown() {
-        if (timer != null)
+        if (timer != null) {
             timer.cancel();
+        }
         timer = null;
         LOG.info("shutdown : MediaPlayer closed!!");
     }
