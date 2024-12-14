@@ -6,3 +6,5 @@ target/
 
 *.iml
 *.txt
+*.properties
+.gitignore
