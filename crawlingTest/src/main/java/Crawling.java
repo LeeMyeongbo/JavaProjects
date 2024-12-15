@@ -1,17 +1,12 @@
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.*;
-
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -26,21 +21,21 @@ public class Crawling {
         String apiURL = "https://openapi.naver.com/v1/search/news?query=" + text + "&display=20";    // JSON 결과
 
         Map<String, String> requestHeaders = new HashMap<>();
-        requestHeaders.put("X-Naver-Client-Id", "77ZHNWgvaXOrqCOeo3s5");
-        requestHeaders.put("X-Naver-Client-Secret", getSecret());
+        requestHeaders.put("X-Naver-Client-Id", getKey("Id.txt"));
+        requestHeaders.put("X-Naver-Client-Secret", getKey("Secret.txt"));
 
         return get(apiURL,requestHeaders);
     }
 
-    private String getSecret() {
-        try (FileReader reader = new FileReader("Secret.txt")) {    // try-with-resources
-            StringBuilder secret = new StringBuilder();                     // try 블록이 끝나면 자동으로 자원 종료
-
+    private String getKey(String textKeyFile) {
+        try (FileReader reader = new FileReader(textKeyFile)) {
+            StringBuilder key = new StringBuilder();
             int ch;
-            while ((ch = reader.read()) != -1)
-                secret.append((char)ch);
+            while ((ch = reader.read()) != -1) {
+                key.append((char) ch);
+            }
 
-            return secret.toString();
+            return key.toString();
         } catch (IOException e) {
             throw new RuntimeException("키 파일이 없습니다...", e);
         }
@@ -50,25 +45,22 @@ public class Crawling {
         HttpURLConnection con = connect(apiUrl);
         try {
             con.setRequestMethod("GET");
-            for (Map.Entry<String, String> header : requestHeaders.entrySet())
+            for (Map.Entry<String, String> header : requestHeaders.entrySet()) {
                 con.setRequestProperty(header.getKey(), header.getValue());
+            }
+            String ret = con.getResponseCode() == HttpURLConnection.HTTP_OK
+                    ? readBody(con.getInputStream()) : readBody(con.getErrorStream());
 
-            int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK)  // 정상 호출
-                return readBody(con.getInputStream());
-            else                                            // 오류 발생
-                return readBody(con.getErrorStream());
-
+            con.disconnect();
+            return ret;
         } catch (IOException e) {
             throw new RuntimeException("API 요청 및 응답 실패", e);
-        } finally {
-            con.disconnect();
         }
     }
 
     private HttpURLConnection connect(String apiUrl) {
         try {
-            URL url = new URL(apiUrl);
+            URL url = URI.create(apiUrl).toURL();
             return (HttpURLConnection)url.openConnection();
         } catch (MalformedURLException e) {
             throw new RuntimeException("API URL이 잘못되었습니다. : " + apiUrl, e);
@@ -83,8 +75,9 @@ public class Crawling {
             StringBuilder responseBody = new StringBuilder();
 
             String line;
-            while ((line = lineReader.readLine()) != null)
+            while ((line = lineReader.readLine()) != null) {
                 responseBody.append(line);
+            }
 
             return responseBody.toString();
         } catch (IOException e) {
@@ -95,16 +88,14 @@ public class Crawling {
     private Set<JSONObject> convert2JSON(String response) {
         JSONObject jsonObject;
         try {
-            jsonObject = (JSONObject) new JSONParser().parse(response);
-        } catch (ParseException e) {
+            jsonObject = new JSONObject(response);
+        } catch (JSONException e) {
             throw new RuntimeException("Json 형식으로 파싱할 수 없습니다...", e);
         }
-        assert jsonObject != null;
 
         JSONArray arrayArticles = (JSONArray) jsonObject.get("items");
         Set<JSONObject> jsonObjects = new HashSet<>();
 
-        // 같은 기사가 중복되는 경우도 있어서 HashSet 으로 중복 제거 + 네이버 뉴스 기사만 들고 옴(한 5개 까지)
         for (Object arrayArticle : arrayArticles) {
             JSONObject articleObject = (JSONObject) arrayArticle;
             String link = (String) articleObject.get("link");
