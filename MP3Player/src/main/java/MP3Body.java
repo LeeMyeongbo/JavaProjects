@@ -16,8 +16,8 @@ import java.net.URL;
 import java.util.*;
 
 class MP3Body extends JFrame implements ActionListener {
-	@Serial
-    private static final long serialVersionUID = 1L;
+
+	@Serial private static final long serialVersionUID = 1L;
     private ArrayList<File> fileList = new ArrayList<>();
     private MP3Button playButton, pauseButton, prevButton, nextButton;
     private MP3Button onceModeButton, repeatModeButton, shuffleModeButton;
@@ -88,7 +88,7 @@ class MP3Body extends JFrame implements ActionListener {
 					MusicSequence.remove(present);
 					Collections.shuffle(MusicSequence);
 				}
-				if (MusicSequence.size() > 0) {
+				if (!MusicSequence.isEmpty()) {
 					musicList.setSelectedIndex(MusicSequence.getFirst());
 					media = new Media(fileList.get(MusicSequence.pop()).toURI().toString());
 					musicTitleLabel.setText(musicList.getSelectedValue());
@@ -199,7 +199,7 @@ class MP3Body extends JFrame implements ActionListener {
 
 	public MP3Body() {
 		super("MP3 플레이어");
-        setIconImage(new ImageIcon(getResourceByPath("Mp3Playericon.png")).getImage());
+        setIconImage(new ImageIcon(getResourceByPath("icon.png")).getImage());
 		setLocation(600, 50);
 		setSize(500, 700);
         add(panel);
@@ -270,11 +270,11 @@ class MP3Body extends JFrame implements ActionListener {
     private void setButtonsRelatedToPlayMode() {
         Dimension size = new Dimension(50, 40);
 
-        onceModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("전체 한 번씩.png")), size,
+        onceModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("all_once.png")), size,
             new Point(125, 170), ONCE_TOOLTIP);
-        repeatModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("전체반복.png")), size,
+        repeatModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("all_repeat.png")), size,
             new Point(225, 170), REPEAT_TOOLTIP);
-        shuffleModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("셔플.png")), size,
+        shuffleModeButton = new MP3Button(this, new ImageIcon(getResourceByPath("shuffle.png")), size,
             new Point(325, 170), SHUFFLE_TOOLTIP);
 
         panel.add(onceModeButton);
@@ -526,7 +526,7 @@ class MP3Body extends JFrame implements ActionListener {
 
     private void searchMusic() {
         String title = searchField.getText();
-        if (title.equals("")) {
+        if (title.isEmpty()) {
             JOptionPane.showMessageDialog(null, "검색어를 입력해 주세요!", "찾기 오류",
                 JOptionPane.WARNING_MESSAGE);
             return;
@@ -535,7 +535,7 @@ class MP3Body extends JFrame implements ActionListener {
         for (int i = 0; i < listModel.getSize(); i++)
             if (listModel.getElementAt(i).contains(title))
                 results.add(i);
-        if (results.size() == 0) {
+        if (results.isEmpty()) {
             JOptionPane.showMessageDialog(null, "찾는 노래가 없습니다!", "찾기 오류",
                 JOptionPane.WARNING_MESSAGE);
             return;
