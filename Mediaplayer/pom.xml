@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.player</groupId>
-    <artifactId>mediaplayer</artifactId>
+    <artifactId>Mediaplayer</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>mediaplayer</name>
+    <name>Mediaplayer</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-media</artifactId>
-            <version>21</version>
+            <version>21.0.2</version>
             <type>pom</type>
         </dependency>
         <dependency>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>30.0-android</version>
+            <version>32.0.0-android</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
