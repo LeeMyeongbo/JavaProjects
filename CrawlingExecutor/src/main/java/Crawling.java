@@ -9,6 +9,8 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Crawling {
 
@@ -18,13 +20,13 @@ public class Crawling {
 
     private String getResponse(String keyword) {
         String text = URLEncoder.encode(keyword, StandardCharsets.UTF_8);
-        String apiURL = "https://openapi.naver.com/v1/search/news?query=" + text + "&display=20";    // JSON 결과
+        String apiURL = "https://openapi.naver.com/v1/search/news?query=" + text + "&display=20";
 
         Map<String, String> requestHeaders = new HashMap<>();
         requestHeaders.put("X-Naver-Client-Id", getKey("Id.txt"));
         requestHeaders.put("X-Naver-Client-Secret", getKey("Secret.txt"));
 
-        return get(apiURL,requestHeaders);
+        return get(apiURL, requestHeaders);
     }
 
     private String getKey(String textKeyFile) {
@@ -54,24 +56,23 @@ public class Crawling {
             con.disconnect();
             return ret;
         } catch (IOException e) {
-            throw new RuntimeException("API 요청 및 응답 실패", e);
+            throw new RuntimeException("API 요청 및 응답 실패하였습니다...", e);
         }
     }
 
     private HttpURLConnection connect(String apiUrl) {
         try {
             URL url = URI.create(apiUrl).toURL();
-            return (HttpURLConnection)url.openConnection();
+            return (HttpURLConnection) url.openConnection();
         } catch (MalformedURLException e) {
-            throw new RuntimeException("API URL이 잘못되었습니다. : " + apiUrl, e);
+            throw new RuntimeException("API URL이 잘못되었습니다 - " + apiUrl, e);
         } catch (IOException e) {
-            throw new RuntimeException("연결에 실패했습니다. : " + apiUrl, e);
+            throw new RuntimeException("연결에 실패했습니다 - " + apiUrl, e);
         }
     }
 
     private String readBody(InputStream body) {
-        InputStreamReader streamReader = new InputStreamReader(body);
-        try (BufferedReader lineReader = new BufferedReader(streamReader)) {
+        try (BufferedReader lineReader = new BufferedReader(new InputStreamReader(body))) {
             StringBuilder responseBody = new StringBuilder();
 
             String line;
@@ -81,38 +82,44 @@ public class Crawling {
 
             return responseBody.toString();
         } catch (IOException e) {
-            throw new RuntimeException("API 응답을 읽는 데 실패했습니다.", e);
+            throw new RuntimeException("API 응답을 읽는 데 실패했습니다...", e);
         }
     }
 
-    private Set<JSONObject> convert2JSON(String response) {
-        JSONObject jsonObject;
+    private List<JSONObject> convert2JSON(String response) {
         try {
-            jsonObject = new JSONObject(response);
+            JSONObject jsonObject = new JSONObject(response);
+
+            return filterNaverNews((JSONArray) jsonObject.get("items"));
         } catch (JSONException e) {
             throw new RuntimeException("Json 형식으로 파싱할 수 없습니다...", e);
         }
-
-        JSONArray arrayArticles = (JSONArray) jsonObject.get("items");
-        Set<JSONObject> jsonObjects = new HashSet<>();
-
-        for (Object arrayArticle : arrayArticles) {
-            JSONObject articleObject = (JSONObject) arrayArticle;
-            String link = (String) articleObject.get("link");
-            if (link.contains("news.naver.com")) jsonObjects.add(articleObject);
-            if (jsonObjects.size() == 5) break;
-        }
-
-        return jsonObjects;
     }
 
-    private String processJson(Set<JSONObject> jsonArticles) {
+    private List<JSONObject> filterNaverNews(JSONArray arrayArticles) {
+        Set<String> appendedLink = new HashSet<>();
+        List<JSONObject> jsonArticleList = new ArrayList<>();
+
+        for (Object jsonArticle : arrayArticles) {
+            JSONObject articleObject = (JSONObject) jsonArticle;
+            String link = (String) articleObject.get("link");
+            if (link.contains("news.naver.com") && !appendedLink.contains(link)) {
+                appendedLink.add(link);
+                jsonArticleList.add(articleObject);
+            }
+            if (jsonArticleList.size() == 5) {
+                break;
+            }
+        }
+        return jsonArticleList;
+    }
+
+    private String processJson(List<JSONObject> jsonArticles) {
         StringBuilder ret = new StringBuilder();
 
         for (JSONObject j : jsonArticles) {
-            String title = (String) j.get("title");
-            title = title.replaceAll("([\\[(<&](.*?)[;>)\\]])", "");
-            ret.append("<").append(title).append(">\n");
+            String title = ((String) j.get("title")).replaceAll("([\\[(<&](.*?)[;>)\\]])", "");
+            ret.append("<").append(eraseInitialSpace(title)).append(">\n");
 
             String link = (String) j.get("link");
             String content = modifyText(crawlPassage(link));
@@ -123,46 +130,70 @@ public class Crawling {
     }
 
     private Element crawlPassage(String link) {
-        Document doc;
         try {
-            doc = Jsoup.connect(link).get();
+            Element e = getElement(Jsoup.connect(link).get());
+            eraseUselessTagsInElement(e);
+
+            return e;
         } catch (IOException e) {
-            throw new RuntimeException("웹페이지를 읽어올 수 없습니다..", e);
+            throw new RuntimeException("네이버 뉴스 웹페이지를 읽어올 수 없습니다...", e);
         }
+    }
 
+    private Element getElement(Document doc) {
         Element e = doc.selectFirst("#dic_area");
-        if (e == null)
+        if (e == null) {
             e = doc.selectFirst("#articeBody");
-        if (e == null)
+        }
+        if (e == null) {
             e = doc.selectFirst("#newsEndContents");
-
-        int num = Objects.requireNonNull(e).childrenSize();
-
-        // 자식 요소 중 태그가 <font>, <span>, <b>가 아니거나 class="end_photo_org"인 경우 모두 제거
-        for (int i = num - 1; i >= 0; i--) {
-            String tag = e.child(i).tagName();
-            if ((!tag.equals("font") && !tag.equals("span") && !tag.equals("b"))
-                || e.child(i).className().equals("end_photo_org"))
-                e.child(i).remove();
         }
         return e;
     }
 
+    private void eraseUselessTagsInElement(Element e) {
+        int num = Objects.requireNonNull(e).childrenSize();
+        for (int i = num - 1; i >= 0; i--) {
+            String tag = e.child(i).tagName();
+            if ((!tag.equals("font") && !tag.equals("span") && !tag.equals("b"))
+                    || e.child(i).className().equals("end_photo_org")) {
+                e.child(i).remove();
+            }
+        }
+    }
+
     private String modifyText(Element e) {
-        // [], (), <>, &;로 싸여져 있는 부분 제거
-        String content = e.text().replaceAll("([\\[(<&](.*?)[;>)\\]])", "");
+        String content = appendSpaceAfterFullStop(e.text().replaceAll("([\\[(<&](.*?)[;>)\\]])", ""));
 
-        // #, ※, ▶, ⓒ 등의 특수문자가 오면 그 뒤의 내용은 필요없어서 잘라냄
-        int idx = content.indexOf('#');
-        if (idx == -1)
-            idx = content.indexOf('※');
-        if (idx == -1)
-            idx = content.indexOf('▶');
-        if (idx == -1)
-            idx = content.indexOf('ⓒ');
-        if (idx != -1)
-            content = content.substring(0, idx);
+        char[] cutoutChar = {'#', '※', '▶', 'ⓒ'};
+        for (char c : cutoutChar) {
+            int idx = content.indexOf(c);
+            if (idx != -1) {
+                content = content.substring(0, idx);
+            }
+        }
 
-        return content;
+        return eraseInitialSpace(content);
+    }
+
+    private String appendSpaceAfterFullStop(String content) {
+        StringBuilder builder = new StringBuilder(content);
+        Pattern pattern = Pattern.compile("[가-힣]\\.[^ ]");
+        Matcher matcher = pattern.matcher(content);
+
+        int weight = 0;
+        while (matcher.find()) {
+            builder.insert(matcher.end() - 1 + weight++, " ");
+        }
+        return builder.toString();
+    }
+
+    private String eraseInitialSpace(String text) {
+        int start = 0;
+        while (text.length() > start && text.charAt(start) == ' ') {
+            start++;
+        }
+
+        return text.substring(start).replace("  ", " ");
     }
 }
