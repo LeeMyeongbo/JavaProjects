@@ -5,14 +5,18 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.jupiter.api.*;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
+import org.mockito.stubbing.OngoingStubbing;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -30,54 +34,19 @@ class CrawlingTest {
     private final InputStream inputStream = mock(InputStream.class);
     private final InputStream errorStream = mock(InputStream.class);
     private final Connection connection = mock(Connection.class);
-    private final Document document = mock(Document.class);
-    private final Element element = mock(Element.class);
-    private final JSONArray jsonArray = new JSONArray(
-        """
-        [
-            {
-                "link" : "https://news.daum.com/14",
-                "title" : "[계엄] Hyundai",
-                "passage" : "wow..."
-            },
-            {
-                "link" : "https://news.naver.com/34",
-                "title" : "'얼라이드' junit",
-                "passage" : "wow1..."
-            },
-            {
-                "link" : "https://news.naver.com/89",
-                "title" : "  test.. test..",
-                "passage" : "wow2..."
-            },
-            {
-                "link" : "https://news.naver.com/89",
-                "title" : "  test.. test..",
-                "passage" : "wow2..."
-            },
-            {
-                "link" : "https://news.naver.com/89",
-                "title" : "  test.. test..",
-                "passage" : "wow2..."
-            },
-            {
-                "link" : "https://news.navers.com/809",
-                "title" : "  test.. test..",
-                "passage" : "wow2..."
-            },
-            {
-                "link" : "https://news.naver.com/90",
-                "title" : "  test.. test???  ",
-                "passage" : "wow2..."
-            },
-            {
-                "link" : "https://news.naver.com/&454",
-                "title" : " &484;  test.. test..  <미래>",
-                "passage" : "wow2..."
-            }
-        ]
-        """
-    );
+    private final Elements elements = mock(Elements.class);
+    private final Document[] documents = new Document[MainService.MAX_NEWS_COUNT];
+    private final Element[] elementList = new Element[MainService.MAX_NEWS_COUNT];
+    private final JSONArray jsonArray = new JSONArray(TestJsonSource.source);
+    private final ArrayList<String> testHtmlSourceList = new ArrayList<>();
+
+    CrawlingTest() {
+        testHtmlSourceList.add(Testcase1.html);
+        testHtmlSourceList.add(Testcase2.html);
+        testHtmlSourceList.add(Testcase3.html);
+        testHtmlSourceList.add(Testcase4.html);
+        testHtmlSourceList.add(Testcase5.html);
+    }
 
     @BeforeEach
     void setUp() throws IOException {
@@ -93,7 +62,29 @@ class CrawlingTest {
         when(httpURLConnection.getInputStream()).thenReturn(inputStream);
         when(httpURLConnection.getErrorStream()).thenReturn(errorStream);
         when(Jsoup.connect(anyString())).thenReturn(connection);
-        when(connection.get()).thenReturn(document);
+
+        stubNewsArticles();
+    }
+
+    private void stubNewsArticles() throws IOException {
+        OngoingStubbing<Document> stubbing = when(connection.get());
+        for (int i = 0; i < MainService.MAX_NEWS_COUNT; i++) {
+            documents[i] = mock(Document.class);
+            elementList[i] = new Element("article");
+            elementList[i].html(testHtmlSourceList.get(i));
+            stubbing = stubbing.thenReturn(documents[i]);
+            when(documents[i].select(anyString())).thenReturn(elements);
+        }
+
+        doReturn(elementList[0]).when(documents[0]).selectFirst("#dic_area");
+        doReturn(null).when(documents[1]).selectFirst("#dic_area");
+        doReturn(elementList[1]).when(documents[1]).selectFirst("#articeBody");
+        doReturn(elementList[2]).when(documents[2]).selectFirst("#dic_area");
+        doReturn(null).when(documents[3]).selectFirst("#dic_area");
+        doReturn(elementList[3]).when(documents[3]).selectFirst("#articeBody");
+        doReturn(null).when(documents[4]).selectFirst("#dic_area");
+        doReturn(null).when(documents[4]).selectFirst("#articeBody");
+        doReturn(elementList[4]).when(documents[4]).selectFirst("#newsEndContents");
     }
 
     @AfterEach
@@ -307,7 +298,7 @@ class CrawlingTest {
     void testJSONExceptionWhenFailedToConvertResponseToJSON() {
         try (
             MockedConstruction<FileReader> mockConstructionFReader = getFReaderMockConstruction();
-            MockedConstruction<BufferedReader> mockConstructionBReader = getBReaderMockConstruction();
+            MockedConstruction<BufferedReader> mockConstructionBReader = getBReaderMockConstruction()
         ) {
             Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
 
@@ -374,6 +365,36 @@ class CrawlingTest {
             verify(connection, times(1)).get();
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
+        }
+    }
+
+    @DisplayName("예외가 발생하지 않았을 시 의도한 대로 뉴스 기사들이 크롤링되는지 체크")
+    @Test
+    void testCrawlNewsArticlesNormally() {
+        try (
+            MockedConstruction<FileReader> mockConstructionFReader = getFReaderMockConstruction();
+            MockedConstruction<BufferedReader> mockConstructionBReader = getBReaderMockConstruction();
+            MockedConstruction<JSONObject> mockConstructionJson = getJsonMockConstruction()
+        ) {
+            AtomicReference<String> result = new AtomicReference<>("");
+            assertDoesNotThrow(() -> result.set(new Crawling().crawl("test")));
+            verify(documents[0], times(1)).selectFirst("#dic_area");
+            verify(documents[0], times(0)).selectFirst("#articeBody");
+            verify(documents[0], times(0)).selectFirst("#newsEndContents");
+            verify(documents[1], times(1)).selectFirst("#dic_area");
+            verify(documents[1], times(1)).selectFirst("#articeBody");
+            verify(documents[1], times(0)).selectFirst("#newsEndContents");
+            verify(documents[2], times(1)).selectFirst("#dic_area");
+            verify(documents[2], times(0)).selectFirst("#articeBody");
+            verify(documents[2], times(0)).selectFirst("#newsEndContents");
+            verify(documents[3], times(1)).selectFirst("#dic_area");
+            verify(documents[3], times(1)).selectFirst("#articeBody");
+            verify(documents[3], times(0)).selectFirst("#newsEndContents");
+            verify(documents[4], times(1)).selectFirst("#dic_area");
+            verify(documents[4], times(1)).selectFirst("#articeBody");
+            verify(documents[4], times(1)).selectFirst("#newsEndContents");
+
+            assertEquals(TestResult.result, result.get());
         }
     }
 }

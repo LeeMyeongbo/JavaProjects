@@ -41,6 +41,8 @@ public class MainService {
         }
     }
 
+    public static final int MAX_NEWS_COUNT = 5;
+
     public static void main(String[] args) {
         String article;
         try (

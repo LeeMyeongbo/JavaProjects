@@ -2,17 +2,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import org.jsoup.nodes.*;
+import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Crawling {
+
+    private static final String[] textTags = {
+        "abbr", "aside", "b", "bdi", "bdo", "blockquote", "br", "del", "dfn", "em", "h1", "h2", "h3", "h4", "h5", "h6",
+        "i", "ins", "kbd", "mark", "p", "pre", "q", "small", "span", "strong", "sub", "sup", "time", "title", "u",
+        "var", "wbr"
+    };
 
     public String crawl(String keyword) {
         return processJson(convert2JSON(getResponse(keyword)));
@@ -107,7 +111,7 @@ public class Crawling {
                 appendedLink.add(link);
                 jsonArticleList.add(articleObject);
             }
-            if (jsonArticleList.size() == 5) {
+            if (jsonArticleList.size() == MainService.MAX_NEWS_COUNT) {
                 break;
             }
         }
@@ -117,9 +121,10 @@ public class Crawling {
     private String processJson(List<JSONObject> jsonArticles) {
         StringBuilder ret = new StringBuilder();
 
+        int idx = 1;
         for (JSONObject j : jsonArticles) {
-            String title = ((String) j.get("title")).replaceAll("([\\[(<&](.*?)[;>)\\]])", "");
-            ret.append("<").append(eraseInitialSpace(title)).append(">\n");
+            String title = ((String) j.get("title")).replaceAll("(\\[(.*?)])|(\\((.*?)\\))|(&(.*?);)|(<(.*?)>)", "");
+            ret.append("뉴스 ").append(idx++).append(". ").append(eraseRedundantSpaces(title)).append("\n");
 
             String link = (String) j.get("link");
             String content = modifyText(crawlPassage(link));
@@ -132,7 +137,7 @@ public class Crawling {
     private Element crawlPassage(String link) {
         try {
             Element e = getElement(Jsoup.connect(link).get());
-            eraseUselessTagsInElement(e);
+            discardUselessElements(e);
 
             return e;
         } catch (IOException e) {
@@ -151,49 +156,40 @@ public class Crawling {
         return e;
     }
 
-    private void eraseUselessTagsInElement(Element e) {
-        int num = Objects.requireNonNull(e).childrenSize();
-        for (int i = num - 1; i >= 0; i--) {
-            String tag = e.child(i).tagName();
-            if ((!tag.equals("font") && !tag.equals("span") && !tag.equals("b"))
-                    || e.child(i).className().equals("end_photo_org")) {
-                e.child(i).remove();
+    private void discardUselessElements(Element element) {
+        Elements childElements = element.children();
+        for (int i = childElements.size() - 1; i >= 0; i--) {
+            Element curElement = childElements.get(i);
+            boolean isTextElement = Arrays.stream(textTags).anyMatch(s -> s.equals(curElement.tagName()));
+            if (!isTextElement || "end_photo_org".equals(curElement.className())) {
+                element.child(i).remove();
             }
         }
     }
 
     private String modifyText(Element e) {
-        String content = appendSpaceAfterFullStop(e.text().replaceAll("([\\[(<&](.*?)[;>)\\]])", ""));
+        String content = e.html().replace("&lt;", "<").replace("&gt;", ">")
+            .replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&").replace("\u00a0", " ")
+            .replace("&copy;", "ⓒ").replace("&reg;", "®").replace("&trade;", "™").replace("&nbsp;", " ")
+            .replaceAll("(<br>)|(<br />)", "\n").replaceAll("(<p>)|(</p>)", "\n")
+            .replaceAll("(\\[(.*?)])|(\\((.*?)\\))|(&(.*?);)|(<(.*?)>)", "");
 
-        char[] cutoutChar = {'#', '※', '▶', 'ⓒ'};
+        return eraseRedundantSpaces(cutOutRedundantContents(content));
+    }
+
+    private String cutOutRedundantContents(String content) {
+        char[] cutoutChar = {'※', 'ⓒ'};
         for (char c : cutoutChar) {
             int idx = content.indexOf(c);
             if (idx != -1) {
                 content = content.substring(0, idx);
             }
         }
-
-        return eraseInitialSpace(content);
+        return content;
     }
 
-    private String appendSpaceAfterFullStop(String content) {
-        StringBuilder builder = new StringBuilder(content);
-        Pattern pattern = Pattern.compile("[가-힣]\\.[^ ]");
-        Matcher matcher = pattern.matcher(content);
-
-        int weight = 0;
-        while (matcher.find()) {
-            builder.insert(matcher.end() - 1 + weight++, " ");
-        }
-        return builder.toString();
-    }
-
-    private String eraseInitialSpace(String text) {
-        int start = 0;
-        while (text.length() > start && text.charAt(start) == ' ') {
-            start++;
-        }
-
-        return text.substring(start).replace("  ", " ");
+    private String eraseRedundantSpaces(String text) {
+        return text.trim().replaceAll(" +", " ")
+            .replaceAll("\n[ \t\n]+", "\n").replaceAll("[ \t\n]+\n", "\n");
     }
 }
