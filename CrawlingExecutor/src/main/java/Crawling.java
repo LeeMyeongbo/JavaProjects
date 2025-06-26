@@ -9,6 +9,8 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Crawling {
 
@@ -174,7 +176,7 @@ public class Crawling {
             .replaceAll("(<br>)|(<br />)", "\n").replaceAll("(<p>)|(</p>)", "\n")
             .replaceAll("(\\[(.*?)])|(\\((.*?)\\))|(&(.*?);)|(<(.*?)>)", "");
 
-        return eraseRedundantSpaces(cutOutRedundantContents(content));
+        return eraseRedundantSpaces(splitBySentence(cutOutRedundantContents(content)));
     }
 
     private String cutOutRedundantContents(String content) {
@@ -186,6 +188,17 @@ public class Crawling {
             }
         }
         return content;
+    }
+
+    private String splitBySentence(String content) {
+        StringBuilder builder = new StringBuilder(content);
+        Pattern pattern = Pattern.compile("[가-힣][.!?] ");
+        Matcher matcher = pattern.matcher(content);
+
+        while (matcher.find()) {
+            builder.replace(matcher.end() - 1, matcher.end(), "\n");
+        }
+        return builder.toString();
     }
 
     private String eraseRedundantSpaces(String text) {
