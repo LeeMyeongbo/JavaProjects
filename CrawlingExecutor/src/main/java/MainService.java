@@ -78,7 +78,7 @@ public class MainService {
     private static ArrayList<ByteString> getAudioByteStringList(String wholeText) {
         ArrayList<ByteString> ret = new ArrayList<>();
         ArrayList<SpeechTask> tasks = allocateSpeechTasks(wholeText);
-        try (ExecutorService service = Executors.newFixedThreadPool(tasks.size())) {
+        try (ExecutorService service = Executors.newFixedThreadPool(20)) {
             List<Future<ByteString>> futureList = service.invokeAll(tasks);
             for (Future<ByteString> future : futureList) {
                 ret.add(future.get());
@@ -92,12 +92,14 @@ public class MainService {
     }
 
     private static ArrayList<SpeechTask> allocateSpeechTasks(String text) {
-        int index = 0;
-        ArrayList<SpeechTask> taskList = new ArrayList<>();
+        String[] splitArticles = text.split("\n");
+        ArrayList<SpeechTask> taskList = new ArrayList<>(splitArticles.length);
 
-        while (index < text.length()) {
-            taskList.add(new SpeechTask(text.substring(index, Math.min(index + 300, text.length()))));
-            index += 300;
+        for (String sentence : splitArticles) {
+            if (sentence.isEmpty()) {
+                continue;
+            }
+            taskList.add(new SpeechTask(sentence + " "));
         }
 
         return taskList;

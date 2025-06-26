@@ -173,7 +173,7 @@ public class Crawling {
         String content = e.html().replace("&lt;", "<").replace("&gt;", ">")
             .replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&").replace("\u00a0", " ")
             .replace("&copy;", "ⓒ").replace("&reg;", "®").replace("&trade;", "™").replace("&nbsp;", " ")
-            .replaceAll("(<br>)|(<br />)", "\n").replaceAll("(<p>)|(</p>)", "\n")
+            .replaceAll("(<br>)|(<br />)|(<p>)|(</p>)|(</strong>)", "\n")
             .replaceAll("(\\[(.*?)])|(\\((.*?)\\))|(&(.*?);)|(<(.*?)>)", "");
 
         return eraseRedundantSpaces(splitBySentence(cutOutRedundantContents(content)));

@@ -2,6 +2,9 @@ public class Testcase1 {
 
     public static final String html =
         """
+            <strong>
+                날씨 무더워...
+            </strong>
             <span class="end_photo_org">
                 <div class="nbd_im_w _LAZY_LOADING_WRAP">
                     <div class="nbd_a _LAZY_LOADING_ERROR_HIDE" id="img_a1">
@@ -26,8 +29,6 @@ public class Testcase1 {
                     흐에 기모링!
                 </div>
             </div>
-            <br />
-            <br />
             (서울=연합뉴스) 최원정 기자 = 한 해 중 낮이 가장 긴 하지(夏至)이자 토요일인 21일 전국이 흐리고 장맛비가 내리겠다.<br />
             <br />
             '하지가 지나면 구름장마다 비가 내린다'는 속담처럼 장마전선은 전국 대부분 지역에 돌풍과 천둥·번개를 동반한 매우 강한 비를 뿌리겠다.<br />
