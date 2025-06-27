@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Crawling {
+public class Crawler {
 
     private static final String[] textTags = {
         "abbr", "aside", "b", "bdi", "bdo", "blockquote", "br", "del", "dfn", "em", "h1", "h2", "h3", "h4", "h5", "h6",

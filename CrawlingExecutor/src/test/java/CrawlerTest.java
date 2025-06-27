@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-class CrawlingTest {
+class CrawlerTest {
 
     private MockedStatic<URLEncoder> mockStaticEncoder;
     private MockedStatic<URI> mockStaticURI;
@@ -40,7 +40,7 @@ class CrawlingTest {
     private final JSONArray jsonArray = new JSONArray(TestJsonSource.source);
     private final ArrayList<String> testHtmlSourceList = new ArrayList<>();
 
-    CrawlingTest() {
+    CrawlerTest() {
         testHtmlSourceList.add(Testcase1.html);
         testHtmlSourceList.add(Testcase2.html);
         testHtmlSourceList.add(Testcase3.html);
@@ -130,7 +130,7 @@ class CrawlingTest {
             MockedConstruction<FileReader> mockConstructionFReader = mockConstruction(FileReader.class,
                 (reader, context) -> when(reader.read()).thenReturn(0).thenThrow(e))
         ) {
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("키 파일이 없습니다...", exception.getMessage());
             assertEquals(e, exception.getCause());
@@ -145,7 +145,7 @@ class CrawlingTest {
             MalformedURLException e = new MalformedURLException();
             when(uri.toURL()).thenThrow(e);
 
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("API URL이 잘못되었습니다 - https://openapi.naver.com/v1/search/news?query=test&display=20",
                 exception.getMessage());
@@ -166,7 +166,7 @@ class CrawlingTest {
             IOException e = new IOException();
             when(url.openConnection()).thenThrow(e);
 
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("연결에 실패했습니다 - https://openapi.naver.com/v1/search/news?query=test&display=20",
                 exception.getMessage());
@@ -187,7 +187,7 @@ class CrawlingTest {
             ProtocolException e = new ProtocolException();
             doThrow(e).when(httpURLConnection).setRequestMethod(anyString());
 
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("API 요청 및 응답 실패하였습니다...", exception.getMessage());
             assertEquals(e, exception.getCause());
@@ -209,7 +209,7 @@ class CrawlingTest {
             IOException e = new IOException();
             when(httpURLConnection.getResponseCode()).thenThrow(e);
 
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("API 요청 및 응답 실패하였습니다...", exception.getMessage());
             assertEquals(e, exception.getCause());
@@ -243,7 +243,7 @@ class CrawlingTest {
         ) {
             when(httpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
 
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("API 응답을 읽는 데 실패했습니다...", exception.getMessage());
             assertEquals(e, exception.getCause());
@@ -277,7 +277,7 @@ class CrawlingTest {
         ) {
             when(httpURLConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
 
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("API 응답을 읽는 데 실패했습니다...", exception.getMessage());
             assertEquals(e, exception.getCause());
@@ -300,7 +300,7 @@ class CrawlingTest {
             MockedConstruction<FileReader> mockConstructionFReader = getFReaderMockConstruction();
             MockedConstruction<BufferedReader> mockConstructionBReader = getBReaderMockConstruction()
         ) {
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("Json 형식으로 파싱할 수 없습니다...", exception.getMessage());
             verify(httpURLConnection, times(1)).setRequestMethod("GET");
@@ -329,7 +329,7 @@ class CrawlingTest {
                 }
             )
         ) {
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("Json 형식으로 파싱할 수 없습니다...", exception.getMessage());
             assertEquals(e, exception.getCause());
@@ -357,7 +357,7 @@ class CrawlingTest {
         ) {
             when(connection.get()).thenThrow(e);
 
-            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawling().crawl("test"));
+            Throwable exception = assertThrowsExactly(RuntimeException.class, () -> new Crawler().crawl("test"));
 
             assertEquals("네이버 뉴스 웹페이지를 읽어올 수 없습니다...", exception.getMessage());
             assertEquals(e, exception.getCause());
@@ -377,7 +377,7 @@ class CrawlingTest {
             MockedConstruction<JSONObject> mockConstructionJson = getJsonMockConstruction()
         ) {
             AtomicReference<String> result = new AtomicReference<>("");
-            assertDoesNotThrow(() -> result.set(new Crawling().crawl("test")));
+            assertDoesNotThrow(() -> result.set(new Crawler().crawl("test")));
             verify(documents[0], times(1)).selectFirst("#dic_area");
             verify(documents[0], times(0)).selectFirst("#articeBody");
             verify(documents[0], times(0)).selectFirst("#newsEndContents");
