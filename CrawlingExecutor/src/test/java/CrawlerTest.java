@@ -76,15 +76,25 @@ class CrawlerTest {
             when(documents[i].select(anyString())).thenReturn(elements);
         }
 
-        doReturn(elementList[0]).when(documents[0]).selectFirst("#dic_area");
-        doReturn(null).when(documents[1]).selectFirst("#dic_area");
-        doReturn(elementList[1]).when(documents[1]).selectFirst("#articeBody");
-        doReturn(elementList[2]).when(documents[2]).selectFirst("#dic_area");
-        doReturn(null).when(documents[3]).selectFirst("#dic_area");
-        doReturn(elementList[3]).when(documents[3]).selectFirst("#articeBody");
-        doReturn(null).when(documents[4]).selectFirst("#dic_area");
-        doReturn(null).when(documents[4]).selectFirst("#articeBody");
-        doReturn(elementList[4]).when(documents[4]).selectFirst("#newsEndContents");
+        if (MainService.MAX_NEWS_COUNT > 0) {
+            doReturn(elementList[0]).when(documents[0]).selectFirst("#dic_area");
+        }
+        if (MainService.MAX_NEWS_COUNT > 1) {
+            doReturn(null).when(documents[1]).selectFirst("#dic_area");
+            doReturn(elementList[1]).when(documents[1]).selectFirst("#articeBody");
+        }
+        if (MainService.MAX_NEWS_COUNT > 2) {
+            doReturn(elementList[2]).when(documents[2]).selectFirst("#dic_area");
+        }
+        if (MainService.MAX_NEWS_COUNT > 3) {
+            doReturn(null).when(documents[3]).selectFirst("#dic_area");
+            doReturn(elementList[3]).when(documents[3]).selectFirst("#articeBody");
+        }
+        if (MainService.MAX_NEWS_COUNT > 4) {
+            doReturn(null).when(documents[4]).selectFirst("#dic_area");
+            doReturn(null).when(documents[4]).selectFirst("#articeBody");
+            doReturn(elementList[4]).when(documents[4]).selectFirst("#newsEndContents");
+        }
     }
 
     @AfterEach
@@ -378,23 +388,45 @@ class CrawlerTest {
         ) {
             AtomicReference<String> result = new AtomicReference<>("");
             assertDoesNotThrow(() -> result.set(new Crawler().crawl("test")));
-            verify(documents[0], times(1)).selectFirst("#dic_area");
-            verify(documents[0], times(0)).selectFirst("#articeBody");
-            verify(documents[0], times(0)).selectFirst("#newsEndContents");
-            verify(documents[1], times(1)).selectFirst("#dic_area");
-            verify(documents[1], times(1)).selectFirst("#articeBody");
-            verify(documents[1], times(0)).selectFirst("#newsEndContents");
-            verify(documents[2], times(1)).selectFirst("#dic_area");
-            verify(documents[2], times(0)).selectFirst("#articeBody");
-            verify(documents[2], times(0)).selectFirst("#newsEndContents");
-            verify(documents[3], times(1)).selectFirst("#dic_area");
-            verify(documents[3], times(1)).selectFirst("#articeBody");
-            verify(documents[3], times(0)).selectFirst("#newsEndContents");
-            verify(documents[4], times(1)).selectFirst("#dic_area");
-            verify(documents[4], times(1)).selectFirst("#articeBody");
-            verify(documents[4], times(1)).selectFirst("#newsEndContents");
 
-            assertEquals(TestResult.result, result.get());
+            if (MainService.MAX_NEWS_COUNT > 0) {
+                verify(documents[0], times(1)).selectFirst("#dic_area");
+                verify(documents[0], times(0)).selectFirst("#articeBody");
+                verify(documents[0], times(0)).selectFirst("#newsEndContents");
+                if (MainService.MAX_NEWS_COUNT == 1) {
+                    assertEquals(TestResult.result0, result.get());
+                }
+            }
+            if (MainService.MAX_NEWS_COUNT > 1) {
+                verify(documents[1], times(1)).selectFirst("#dic_area");
+                verify(documents[1], times(1)).selectFirst("#articeBody");
+                verify(documents[1], times(0)).selectFirst("#newsEndContents");
+                if (MainService.MAX_NEWS_COUNT == 2) {
+                    assertEquals(TestResult.result1, result.get());
+                }
+            }
+            if (MainService.MAX_NEWS_COUNT > 2) {
+                verify(documents[2], times(1)).selectFirst("#dic_area");
+                verify(documents[2], times(0)).selectFirst("#articeBody");
+                verify(documents[2], times(0)).selectFirst("#newsEndContents");
+                if (MainService.MAX_NEWS_COUNT == 3) {
+                    assertEquals(TestResult.result2, result.get());
+                }
+            }
+            if (MainService.MAX_NEWS_COUNT > 3) {
+                verify(documents[3], times(1)).selectFirst("#dic_area");
+                verify(documents[3], times(1)).selectFirst("#articeBody");
+                verify(documents[3], times(0)).selectFirst("#newsEndContents");
+                if (MainService.MAX_NEWS_COUNT == 4) {
+                    assertEquals(TestResult.result3, result.get());
+                }
+            }
+            if (MainService.MAX_NEWS_COUNT > 4) {
+                verify(documents[4], times(1)).selectFirst("#dic_area");
+                verify(documents[4], times(1)).selectFirst("#articeBody");
+                verify(documents[4], times(1)).selectFirst("#newsEndContents");
+                assertEquals(TestResult.result4, result.get());
+            }
         }
     }
 }

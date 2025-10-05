@@ -1,108 +1,40 @@
-import com.google.cloud.texttospeech.v1.*;
-import com.google.protobuf.ByteString;
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.SequenceInputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
-
-import static javax.sound.sampled.AudioSystem.getAudioInputStream;
-import static javax.sound.sampled.AudioSystem.getClip;
 
 public class SpeechExecutor {
 
-    static class SpeechTask implements Callable<ByteString> {
-
-        private final String text;
-        private final VoiceSelectionParams voice;
-        private final AudioConfig audioConfig;
-
-        public SpeechTask(String text) {
-            this.text = text;
-            this.voice = VoiceSelectionParams.newBuilder()
-                .setLanguageCode("ko-KR")
-                .setName("ko-KR-Chirp3-HD-Leda")
-                .build();
-            this.audioConfig = AudioConfig.newBuilder()
-                .setAudioEncoding(AudioEncoding.LINEAR16)
-                .build();
+    public void playNewsSpeech() {
+        if (!synthesize()) {
+            throw new RuntimeException("음성 합성이 정상적으로 이루어지지 못했습니다...");
         }
-
-        @Override
-        public ByteString call() {
-            try (TextToSpeechClient client = TextToSpeechClient.create()) {
-                SynthesisInput input = SynthesisInput.newBuilder().setText(text).build();
-                return client.synthesizeSpeech(input, voice, audioConfig).getAudioContent();
-            } catch (IOException e) {
-                throw new RuntimeException("음성 합성 클라이언트를 불러올 수 없습니다 : " + e);
-            }
+        try (FileInputStream stream = new FileInputStream("NewsTTS/news.mp3")) {
+            new Player(stream).play();
+        } catch (IOException | JavaLayerException e) {
+            throw new RuntimeException("음성 재생 중 오류가 발생하였습니다...", e);
         }
     }
 
-    public void speak(String wholeText) {
-        try (Clip clip = getClip()) {
-            AudioInputStream stream = getWholeArticleSpeechStream(getAudioByteStringList(wholeText));
-            clip.open(stream);
-            clip.start();
-
-            long elapsed = clip.getMicrosecondLength();
-            System.out.println("length - " + elapsed / 60000000 + "m " + elapsed % 60000000 / 1000000 + "s");
-            clip.drain();
-            clip.stop();
-        } catch (LineUnavailableException | IOException e) {
-            throw new RuntimeException("음성 재생 중 오류가 발생하였습니다 : " + e);
-        }
+    private boolean synthesize() {
+        return System.getProperty("os.name").toLowerCase().contains("win")
+            ? synthesize("cmd.exe", "/c", ".venv\\Scripts\\activate && python task.py")
+            : synthesize("/bin/bash", "-c", "source .venv/bin/activate && python task.py");
     }
 
-    private ArrayList<ByteString> getAudioByteStringList(String wholeText) {
-        ArrayList<ByteString> ret = new ArrayList<>();
-        ArrayList<SpeechTask> tasks = allocateSpeechTasks(wholeText);
-        try (ExecutorService service = Executors.newFixedThreadPool(20)) {
-            List<Future<ByteString>> futureList = service.invokeAll(tasks);
-            for (Future<ByteString> future : futureList) {
-                ret.add(future.get());
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException("오디오 합성 중 오류가 발생하였습니다 : " + e);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("검색된 뉴스 기사가 없어 음성을 합성할 수 없습니다 : " + e);
-        }
-        return ret;
-    }
-
-    private ArrayList<SpeechTask> allocateSpeechTasks(String text) {
-        String[] splitArticles = text.split("\n");
-        ArrayList<SpeechTask> taskList = new ArrayList<>(splitArticles.length);
-
-        for (String sentence : splitArticles) {
-            if (sentence.isEmpty()) {
-                continue;
-            }
-            taskList.add(new SpeechTask(sentence + " "));
-        }
-
-        return taskList;
-    }
-
-    private AudioInputStream getWholeArticleSpeechStream(List<ByteString> list) {
+    private boolean synthesize(String cmd1, String cmd2, String cmd3) {
         try {
-            AudioInputStream stream = getAudioInputStream(new ByteArrayInputStream(list.get(0).toByteArray()));
-            for (int i = 1; i < list.size(); i++) {
-                AudioInputStream curStream = getAudioInputStream(new ByteArrayInputStream(list.get(i).toByteArray()));
-                stream = new AudioInputStream(new SequenceInputStream(stream, curStream), stream.getFormat(),
-                    stream.getFrameLength() + curStream.getFrameLength());
-            }
-            return stream;
-        } catch (UnsupportedAudioFileException | IOException e) {
-            throw new RuntimeException("오디오 스트림을 불러올 수 없습니다 : " + e);
-        } catch (IndexOutOfBoundsException e) {
-            throw new RuntimeException("뉴스 기사가 없습니다 : " + e);
+            ProcessBuilder builder = new ProcessBuilder();
+            builder.directory(new File("NewsTTS"));
+
+            builder.command(cmd1, cmd2, cmd3);
+            builder.inheritIO();
+
+            return builder.start().waitFor() == 0;
+        } catch (InterruptedException | IOException e) {
+            throw new RuntimeException("음성 합성 중 오류가 발생하였습니다...", e);
         }
     }
 }
