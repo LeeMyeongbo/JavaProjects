@@ -22,9 +22,10 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
+        working-directory: CrawlingExecutor
 
       - name: Upload-artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Crawling_SNAPSHOT.jar
-          path: target/*.jar
+          path: CrawlingExecutor/target/*.jar
