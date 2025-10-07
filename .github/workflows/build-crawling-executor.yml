@@ -10,6 +10,7 @@ on:
 jobs:
   build:
     runs-on: self-hosted
+    permissions: read-all
 
     steps:
       - name: Checkout
@@ -31,3 +32,10 @@ jobs:
         with:
           name: Crawling_SNAPSHOT.jar
           path: CrawlingExecutor/target/*.jar
+
+      - name: Run test
+        run: mvn test
+        working-directory: CrawlingExecutor
+
+      - name: Coverall test reports
+        uses: coverallsapp/github-action@v2
