@@ -1,13 +1,16 @@
-name: Maven Package
+name: CrawlingExecutor build & test
 
 on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'CrawlingExecutor/**'
 
 jobs:
   build:
     runs-on: self-hosted
+    permissions: read-all
 
     steps:
       - name: Checkout
@@ -20,12 +23,19 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      - name: Build with maven
         run: mvn -B package --file pom.xml
         working-directory: CrawlingExecutor
 
-      - name: Upload-artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Crawling_SNAPSHOT.jar
           path: CrawlingExecutor/target/*.jar
+
+      - name: Run test
+        run: mvn test
+        working-directory: CrawlingExecutor
+
+      - name: Coverall test reports
+        uses: coverallsapp/github-action@v2
