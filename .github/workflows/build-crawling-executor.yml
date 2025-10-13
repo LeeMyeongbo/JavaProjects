@@ -1,13 +1,19 @@
-name: Maven Package
+name: CrawlingExecutor build & test
 
 on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'CrawlingExecutor/**'
 
 jobs:
   build:
     runs-on: self-hosted
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: write
 
     steps:
       - name: Checkout
@@ -20,12 +26,34 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      - name: Build with maven
         run: mvn -B package --file pom.xml
         working-directory: CrawlingExecutor
 
-      - name: Upload-artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Crawling_SNAPSHOT.jar
           path: CrawlingExecutor/target/*.jar
+
+      - name: Run test
+        run: mvn test
+        working-directory: CrawlingExecutor
+
+      - name: Test Reporter with PR Comment
+        if: always()
+        uses: n-ryu/test-reporter@v0.0.2
+        with:
+          name: Junit tests
+          path: CrawlingExecutor/target/surefire-reports/TEST-*.xml
+          reporter: java-junit
+          fail-on-error: 'true'
+
+      - name: Add coverage comments to PR
+        if: always()
+        uses: madrapps/jacoco-report@v1.7.2
+        with:
+          paths: CrawlingExecutor/target/site/jacoco/jacoco.xml
+          token: ${{ github.token }}
+          update-comment: true
+          title: Test coverage report
